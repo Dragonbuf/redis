@@ -5,7 +5,7 @@
 - [x] sdshdr(简动态字符串)
 - [ ] list (链表)
 - [ ] dict (字典)
-- [ ] zskiplist (跳跃表)
+- [x] zskiplist (跳跃表)
 - [ ] set(整数集合)
 - [ ]  ziplist(压缩列表)
 - [ ]  obj 对象
