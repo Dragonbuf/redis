@@ -10,4 +10,7 @@
 - [ ]  ziplist(压缩列表)
 - [ ]  obj 对象
 
- 
+# redis 数据结构基本 API
+ - [x] sdshdr
+    - [x] set
+    - [x] get
