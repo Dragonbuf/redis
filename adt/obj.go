@@ -1,7 +1,19 @@
 package adt
 
 type RedisObject struct {
-	type4    uint8
-	encoding uint8
-	ptr      *Obj
+	types    interface{}
+	encoding interface{}
+	ptr      *interface{}
+}
+
+func NewRedisObject() *RedisObject {
+	return &RedisObject{}
+}
+
+func (obj *RedisObject) SetTypes(t string) {
+	obj.types = t
+}
+
+func (obj *RedisObject) SetPtr(ptr *interface{}) {
+	obj.ptr = ptr
 }
