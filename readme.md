@@ -19,6 +19,9 @@
  - [x] sdshdr
     - [x] set
     - [x] get
+ - [x] dict
+    - [x] hset
+    - [x] hget
 
 
 # 其他基本数据结构

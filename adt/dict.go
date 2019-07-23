@@ -1,8 +1,11 @@
 package adt
 
-import "math/rand"
+import (
+	"fmt"
+)
 
 type dictKey string
+type dictValue string
 
 // 类型特定函数
 type dicType string
@@ -28,56 +31,76 @@ type DictHt struct {
 //todo 使　v 可能是一个指针　可能是一个　uint64  可能是　int64
 type DictEntry struct {
 	key  *dictKey
-	v    interface{} //
+	v    *dictValue
 	next *DictEntry
 }
 
-type dictVUnion interface {
-	val() *Val
-	uint64() uint64
-	int64() int64
+func NewDict() *Dict {
+	dict := &Dict{}
+
+	table := make([]*DictEntry, 2)
+	table[0] = &DictEntry{key: nil, v: nil}
+	table[1] = &DictEntry{key: nil, v: nil}
+
+	// 初始化 hashTable
+	dict.ht[0] = DictHt{table: table, size: 2, sizeMask: 1, used: 0}
+	dict.ht[1] = DictHt{table: []*DictEntry{}, size: 0, sizeMask: 0, used: 0}
+	return dict
 }
 
-type Val struct {
-}
-
-func (d *Dict) Hset(key dictKey, value interface{}) {
+// 暂时只支持 string 吧
+func (d *Dict) Hset(key *dictKey, value *dictValue) {
 	hash := d.GetHash(key)
 	index := d.GetIndex(hash)
-
-	entry := new(DictEntry)
-	entry.key = &key
-	entry.v = value
-
-	// 拉链法解决　hash 冲突
-	if d.ht[0].table[index] != nil {
+	fmt.Println("debug: hset index is ", index)
+	// 如果原先位置已经有数据，拉链法解决　hash 冲突
+	if d.ht[0].table[index].key != nil {
+		fmt.Println("debug: 出现 hash 冲突，使用拉链法解决 ")
+		entry := &DictEntry{key: key, v: value}
 		entry.next = d.ht[0].table[index]
+		d.ht[0].table[index] = entry
+		fmt.Println("debug: 现在 key : " + *d.ht[0].table[index].v + " next key :" + *d.ht[0].table[index].next.v)
+	} else {
+		d.ht[0].table[index].key = key
+		d.ht[0].table[index].v = value
 	}
 
-	d.ht[0].table[index] = entry.next
 }
 
-func (d *Dict) Hget(key dictKey) interface{} {
+func (d *Dict) Hget(key *dictKey) *dictValue {
 	hash := d.GetHash(key)
 	index := d.GetIndex(hash)
 
-	// 拉链法解决　hash 冲突
-	if d.ht[0].table[index] == nil {
+	fmt.Println("debug: hget [", *key, "] in index ", index)
+
+	if d.ht[0].table[index].key == nil {
+		fmt.Println("debug: ht[0] table is nil ")
 		return nil
 	}
 
-	for d.ht[0].table[index].next != nil {
-		if d.ht[0].table[index].key == &key {
-			return d.ht[0].table[index].v
-		}
+	// 如果 next 没有数据，证明只有单一的 entry
+	if d.ht[0].table[index].next == nil {
+		return d.ht[0].table[index].v
 	}
 
+	// next  有数据
+	for d.ht[0].table[index] != nil {
+		fmt.Println("debug: ht table index key is  ", *d.ht[0].table[index].key)
+
+		if d.ht[0].table[index].key == key {
+			fmt.Println("debug: hget found key in index ", index)
+			return d.ht[0].table[index].v
+		}
+		d.ht[0].table[index] = d.ht[0].table[index].next
+	}
+
+	fmt.Println("debug: ht[0]  not found this key ")
 	return nil
 }
 
-// todo 实现 hash 算法, 这里使用了随机数
-func (d *Dict) GetHash(key dictKey) uint64 {
-	return uint64(rand.Int())
+// todo 实现 hash 算法, 这里只返回 0
+func (d *Dict) GetHash(key *dictKey) uint64 {
+	return uint64(0)
 }
 
 func (d *Dict) GetIndex(hash uint64) uint64 {
