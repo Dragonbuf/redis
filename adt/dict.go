@@ -99,8 +99,13 @@ func (d *Dict) Hget(key *dictKey) *dictValue {
 }
 
 // todo 实现 hash 算法, 这里只返回 0
-func (d *Dict) GetHash(key *dictKey) uint64 {
-	return uint64(0)
+func (d *Dict) GetHash(key *dictKey) (hashVal uint64) {
+
+	for _, v := range *key {
+		hashVal = (hashVal << 5) + uint64(v+1)
+	}
+
+	return hashVal
 }
 
 func (d *Dict) GetIndex(hash uint64) uint64 {

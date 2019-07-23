@@ -1,6 +1,8 @@
 package adt
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestDict(t *testing.T) {
 	dict := NewDict()
@@ -16,4 +18,15 @@ func TestDict(t *testing.T) {
 	if res != (*dictValue)(&v) {
 		t.Error("hget is wrong ", res)
 	}
+}
+
+func TestHash(t *testing.T) {
+	dict := NewDict()
+	k := "a"
+
+	hash := dict.GetHash((*dictKey)(&k))
+	if hash == uint64(0) {
+		t.Error("hash is error ", hash)
+	}
+
 }
