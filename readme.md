@@ -8,7 +8,7 @@
 - [ ] list (链表)
 - [ ] dict (字典)
 - [x] zskiplist (跳跃表)
-- [x] set(整数集合)
+- [ ] set(整数集合)
 - [ ]  ziplist(压缩列表)
 - [ ]  obj 对象
 - [ ] 其他基本数据结构
