@@ -1,8 +1,10 @@
 package server
 
+import "redis/adt"
+
 // todo 先实现 dict 不然不好存储　redisDb
 type RedisDb struct {
-	dict map[string]*interface{} // 数据库空间，保存所有键值对
+	dict *adt.Dict // 数据库空间，保存所有键值对
 }
 
 func NewRedisDb() *RedisDb {
@@ -11,9 +13,6 @@ func NewRedisDb() *RedisDb {
 
 func (r *RedisDb) Set(key, value string) {
 
-}
-
-type dict struct {
 }
 
 type StringObject struct {
