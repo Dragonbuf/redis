@@ -7,7 +7,7 @@ type TreeNode struct {
 }
 
 func NewTreeNode() *TreeNode {
-	return &TreeNode{}
+	return &TreeNode{Element: -1}
 }
 
 func (t *TreeNode) MakeEmpty() {
@@ -32,23 +32,59 @@ func (t *TreeNode) Find(element int) int {
 	}
 }
 
-func (t *TreeNode) FindMin() int {
+func (t *TreeNode) FindMin() *TreeNode {
 	if t == nil {
-		return -1
+		return nil
 	} else if t.Left == nil {
-		return t.Element
+		return t
 	} else {
 		return t.Left.FindMin()
 	}
 }
 
-func (t *TreeNode) FindMax() int {
+func (t *TreeNode) FindMax() *TreeNode {
 	if t == nil {
-		return -1
+		return nil
 	}
 	for t.Right != nil {
 		t = t.Right
 	}
 
-	return t.Element
+	return t
+}
+
+func (t *TreeNode) Insert(element int) *TreeNode {
+	if t.Element == -1 {
+		t.Element = element
+	} else if element < t.Left.Element {
+		t.Left = t.Left.Insert(element)
+	} else {
+		t.Right = t.Right.Insert(element)
+	}
+
+	return t
+}
+
+func (t *TreeNode) Delete(element int) *TreeNode {
+	temp := NewTreeNode()
+	if t.Element == -1 {
+		panic("tree node is empty")
+	} else if element < t.Element {
+		t.Left = t.Left.Delete(element)
+	} else if element > t.Element {
+		t.Right = t.Right.Delete(element)
+	} else if t.Left != nil && t.Right != nil {
+		temp = t.Right.FindMin()
+		t.Element = temp.Element
+		t.Right = t.Right.Delete(temp.Element)
+	} else {
+		temp = t
+		if t.Left == nil {
+			t = t.Right
+		} else if t.Right == nil {
+			t = t.Left
+		}
+	}
+
+	return t
 }
