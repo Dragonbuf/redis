@@ -4,8 +4,8 @@ import (
 	"fmt"
 )
 
-type dictKey string
-type dictValue string
+type DictKey string
+type DictValue string
 
 // 类型特定函数
 type dicType string
@@ -30,8 +30,8 @@ type DictHt struct {
 
 //todo 使　v 可能是一个指针　可能是一个　uint64  可能是　int64
 type DictEntry struct {
-	key  *dictKey
-	v    *dictValue
+	key  *DictKey
+	v    *DictValue
 	next *DictEntry
 }
 
@@ -49,7 +49,7 @@ func NewDict() *Dict {
 }
 
 // 暂时只支持 string 吧
-func (d *Dict) Hset(key *dictKey, value *dictValue) {
+func (d *Dict) Hset(key *DictKey, value *DictValue) {
 	hash := d.GetHash(key)
 	index := d.GetIndex(hash)
 	fmt.Println("debug: hset index is ", index)
@@ -67,7 +67,7 @@ func (d *Dict) Hset(key *dictKey, value *dictValue) {
 
 }
 
-func (d *Dict) Hget(key *dictKey) *dictValue {
+func (d *Dict) Hget(key *DictKey) *DictValue {
 	hash := d.GetHash(key)
 	index := d.GetIndex(hash)
 
@@ -99,7 +99,7 @@ func (d *Dict) Hget(key *dictKey) *dictValue {
 }
 
 // todo 实现 hash 算法, 这里只返回 0
-func (d *Dict) GetHash(key *dictKey) (hashVal uint64) {
+func (d *Dict) GetHash(key *DictKey) (hashVal uint64) {
 
 	for _, v := range *key {
 		hashVal = (hashVal << 5) + uint64(v+1)

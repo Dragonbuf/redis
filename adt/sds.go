@@ -48,5 +48,9 @@ func (sds *Sdshdr) Set(s string) int {
 }
 
 func (sds *Sdshdr) Get() string {
+	if sds.len == 0 {
+		return ""
+	}
+
 	return string(*sds.buf)
 }

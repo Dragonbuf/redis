@@ -11,11 +11,11 @@ func TestDict(t *testing.T) {
 
 	k2 := "c"
 	v2 := "d"
-	dict.Hset((*dictKey)(&k), (*dictValue)(&v))
-	dict.Hset((*dictKey)(&k2), (*dictValue)(&v2))
+	dict.Hset((*DictKey)(&k), (*DictValue)(&v))
+	dict.Hset((*DictKey)(&k2), (*DictValue)(&v2))
 
-	res := dict.Hget((*dictKey)(&k))
-	if res != (*dictValue)(&v) {
+	res := dict.Hget((*DictKey)(&k))
+	if res != (*DictValue)(&v) {
 		t.Error("hget is wrong ", res)
 	}
 }
@@ -24,7 +24,7 @@ func TestHash(t *testing.T) {
 	dict := NewDict()
 	k := "a"
 
-	hash := dict.GetHash((*dictKey)(&k))
+	hash := dict.GetHash((*DictKey)(&k))
 	if hash == uint64(0) {
 		t.Error("hash is error ", hash)
 	}
