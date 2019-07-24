@@ -4,8 +4,9 @@ import (
 	"fmt"
 )
 
+const DICTVALUE_TYPE_STRING_OBJ = "stringObj"
+
 type DictKey string
-type DictValue string
 
 // 类型特定函数
 type dicType string
@@ -28,11 +29,33 @@ type DictHt struct {
 	used     uint64
 }
 
-//todo 使　v 可能是一个指针　可能是一个　uint64  可能是　int64
 type DictEntry struct {
 	key  *DictKey
 	v    *DictValue
 	next *DictEntry
+}
+
+type DictValue struct {
+	obj       *Object
+	int64Obj  int64
+	uint64Obj uint64
+	valueType string
+}
+
+type Object struct {
+	strObj  *StringObject
+	hashOjb *HashObject
+	listObj *ListObject
+}
+
+type StringObject struct {
+	Sds *Sdshdr
+}
+
+type HashObject struct {
+}
+
+type ListObject struct {
 }
 
 func NewDict() *Dict {
@@ -59,7 +82,6 @@ func (d *Dict) Hset(key *DictKey, value *DictValue) {
 		entry := &DictEntry{key: key, v: value}
 		entry.next = d.ht[0].table[index]
 		d.ht[0].table[index] = entry
-		fmt.Println("debug: 现在 key : " + *d.ht[0].table[index].v + " next key :" + *d.ht[0].table[index].next.v)
 	} else {
 		d.ht[0].table[index].key = key
 		d.ht[0].table[index].v = value

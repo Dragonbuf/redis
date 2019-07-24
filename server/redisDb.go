@@ -15,15 +15,6 @@ func (r *RedisDb) Set(key, value string) {
 
 }
 
-type StringObject struct {
-}
-
-type HashObject struct {
-}
-
-type ListObject struct {
-}
-
 func Test() {
 
 }
