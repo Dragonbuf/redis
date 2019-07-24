@@ -85,6 +85,11 @@ func (d *Dict) HsetString(key, value *string) {
 
 func (d *Dict) HgetString(key *string) string {
 	dictValue := d.Hget(key)
+
+	if dictValue == nil {
+		return "<nil>"
+	}
+
 	if dictValue.valueType != DictvalueTypeStringObj {
 		panic("can not user HgetString in dictValue where type is not string")
 	}
