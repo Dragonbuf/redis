@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
-	"redis/adt"
+	"redis/server"
 )
 
 var (
@@ -14,14 +14,16 @@ var (
 
 func main() {
 	fmt.Println("[only support get set exit] \nex :\n set fuckyou\n or \n get (will print fuck you) \n")
-	sds := adt.NewSdsHdr()
+
+	db := server.NewRedisDb()
+
 	for {
 		fmt.Printf("go-redis ->  ")
-		_, _ = fmt.Scanln(&Command, &Value)
+		_, _ = fmt.Scanln(&Command, &key, &Value)
 		if Command == "set" {
-			sds.Set(Value)
+			db.SetString(&key, &Value)
 		} else if Command == "get" {
-			fmt.Println(sds.Get())
+			fmt.Println(db.GetString(&key))
 		} else if Command == "exit" {
 			fmt.Println("good bye")
 			os.Exit(1)

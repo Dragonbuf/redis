@@ -8,11 +8,30 @@ type RedisDb struct {
 }
 
 func NewRedisDb() *RedisDb {
-	return &RedisDb{}
+	db := &RedisDb{}
+	dict := adt.NewDict()
+	db.dict = dict
+	return db
 }
 
-func (r *RedisDb) Set(key, value string) {
+func (r *RedisDb) Set(key *string, value *adt.DictValue) {
+	r.dict.Hset(key, value)
+}
 
+func (r *RedisDb) SetString(key, value *string) {
+	r.dict.HsetString(key, value)
+}
+
+func (r *RedisDb) GetString(key *string) string {
+	return r.dict.HgetString(key)
+}
+
+func (r *RedisDb) SetHash(key *string, value *adt.DictValue) {
+	r.dict.Hset(key, value)
+}
+
+func (r *RedisDb) SetList(key *string, value *adt.DictValue) {
+	r.dict.Hset(key, value)
 }
 
 func Test() {

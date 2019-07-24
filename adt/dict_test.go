@@ -11,7 +11,7 @@ func TestDict(t *testing.T) {
 	v := "b"
 
 	sds := NewSdsHdr()
-	sds.Set(v)
+	sds.Set(&v)
 
 	strObj := StringObject{}
 	strObj.Sds = sds
@@ -19,13 +19,13 @@ func TestDict(t *testing.T) {
 	obj := Object{}
 	obj.strObj = &strObj
 	value := DictValue{obj: &obj}
-	value.valueType = DICTVALUE_TYPE_STRING_OBJ
+	value.valueType = DictvalueTypeStringObj
 
 	k2 := "c"
 	v2 := "d"
 
 	sds2 := NewSdsHdr()
-	sds2.Set(v2)
+	sds2.Set(&v2)
 
 	strObj2 := StringObject{}
 	strObj2.Sds = sds
@@ -33,12 +33,12 @@ func TestDict(t *testing.T) {
 	obj2 := Object{}
 	obj2.strObj = &strObj
 	value2 := DictValue{obj: &obj2}
-	value.valueType = DICTVALUE_TYPE_STRING_OBJ
+	value.valueType = DictvalueTypeStringObj
 
-	dict.Hset((*DictKey)(&k), &value)
-	dict.Hset((*DictKey)(&k2), &value2)
+	dict.Hset(&k, &value)
+	dict.Hset(&k2, &value2)
 
-	res := dict.Hget((*DictKey)(&k))
+	res := dict.Hget(&k)
 	if res != &value {
 		t.Error("hget is wrong ", res)
 	}
@@ -51,7 +51,7 @@ func TestHash(t *testing.T) {
 	dict := NewDict()
 	k := "a"
 
-	hash := dict.GetHash((*DictKey)(&k))
+	hash := dict.GetHash(&k)
 	if hash == uint64(0) {
 		t.Error("hash is error ", hash)
 	}

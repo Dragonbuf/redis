@@ -13,14 +13,14 @@ func NewSdsHdr() *Sdshdr {
 	return &Sdshdr{}
 }
 
-func (sds *Sdshdr) Set(s string) int {
-	len := len(s)
+func (sds *Sdshdr) Set(s *string) int {
+	len := len(*s)
 
-	fmt.Printf("debug: 设置字符串 %s, 需要空间 %d \n", s, len)
+	fmt.Printf("debug: 设置字符串 %s, 需要空间 %d \n", *s, len)
 	// 如果 sds 本身的 len 长度足够,直接更改
 	if sds.len >= len {
 		fmt.Printf("debug: 空间　len %d 足够使用，直接赋值 \n", sds.len)
-		buf := []byte(s)
+		buf := []byte(*s)
 		sds.buf = &buf
 		sds.len = len
 		return 1
@@ -32,13 +32,13 @@ func (sds *Sdshdr) Set(s string) int {
 		buf := make([]byte, len*2)
 		sds.free = len
 		sds.len = len
-		buf = []byte(s)
+		buf = []byte(*s)
 		sds.buf = &buf
 		return 1
 	} else { // 如果 len + free 足够使用，那么就直接使用 buf 存储
 		fmt.Printf("debug: 空间 len + free = %d 足够，　使用空间 \n", sds.len+sds.free)
 
-		buf := []byte(s)
+		buf := []byte(*s)
 		sds.buf = &buf
 		sds.free = len - sds.len
 		sds.len = len

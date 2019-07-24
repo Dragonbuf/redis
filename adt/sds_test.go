@@ -6,8 +6,12 @@ import (
 
 func TestSds(t *testing.T) {
 	sds := NewSdsHdr()
-	sds.Set("hello")
-	sds.Set("World")
-	sds.Set("helloWorld")
-	sds.Set("helloWorld 2")
+	hello := "hello"
+	sds.Set(&hello)
+
+	world := "world"
+	sds.Set(&world)
+
+	helloWorld := "helloWorld"
+	sds.Set(&helloWorld)
 }

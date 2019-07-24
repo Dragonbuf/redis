@@ -4,9 +4,7 @@ import (
 	"fmt"
 )
 
-const DICTVALUE_TYPE_STRING_OBJ = "stringObj"
-
-type DictKey string
+const DictvalueTypeStringObj = "stringObj"
 
 // 类型特定函数
 type dicType string
@@ -30,7 +28,7 @@ type DictHt struct {
 }
 
 type DictEntry struct {
-	key  *DictKey
+	key  *string
 	v    *DictValue
 	next *DictEntry
 }
@@ -70,9 +68,32 @@ func NewDict() *Dict {
 	dict.ht[1] = DictHt{table: []*DictEntry{}, size: 0, sizeMask: 0, used: 0}
 	return dict
 }
+func (d *Dict) HsetString(key, value *string) {
+	sds := NewSdsHdr()
+	sds.Set(value)
+
+	strObj := StringObject{}
+	strObj.Sds = sds
+
+	obj := Object{}
+	obj.strObj = &strObj
+	dictValue := DictValue{obj: &obj}
+	dictValue.valueType = DictvalueTypeStringObj
+
+	d.Hset(key, &dictValue)
+}
+
+func (d *Dict) HgetString(key *string) string {
+	dictValue := d.Hget(key)
+	if dictValue.valueType != DictvalueTypeStringObj {
+		panic("can not user HgetString in dictValue where type is not string")
+	}
+
+	return dictValue.obj.strObj.Sds.Get()
+}
 
 // 暂时只支持 string 吧
-func (d *Dict) Hset(key *DictKey, value *DictValue) {
+func (d *Dict) Hset(key *string, value *DictValue) {
 	hash := d.GetHash(key)
 	index := d.GetIndex(hash)
 	fmt.Println("debug: hset index is ", index)
@@ -89,7 +110,7 @@ func (d *Dict) Hset(key *DictKey, value *DictValue) {
 
 }
 
-func (d *Dict) Hget(key *DictKey) *DictValue {
+func (d *Dict) Hget(key *string) *DictValue {
 	hash := d.GetHash(key)
 	index := d.GetIndex(hash)
 
@@ -121,7 +142,7 @@ func (d *Dict) Hget(key *DictKey) *DictValue {
 }
 
 // todo 实现 hash 算法, 这里只返回 0
-func (d *Dict) GetHash(key *DictKey) (hashVal uint64) {
+func (d *Dict) GetHash(key *string) (hashVal uint64) {
 
 	for _, v := range *key {
 		hashVal = (hashVal << 5) + uint64(v+1)
