@@ -71,19 +71,20 @@ func (d *DictHt) findValue(key *string) *DictValue {
 	}
 
 	if !d.IsLinked(index) {
-		if d.table[index].key == key {
+		if string(*d.table[index].key) == string(*key) {
 			return d.table[index].v
 		}
 		return nil
 	}
 
 	// next  有数据
+	tempTable := d.table[index]
 
-	for d.table[index] != nil {
-		if d.table[index].key == key {
-			return d.table[index].v
+	for tempTable != nil {
+		if *tempTable.key == *key {
+			return tempTable.v
 		}
-		d.table[index] = d.table[index].next
+		tempTable = tempTable.next
 	}
 
 	return nil
