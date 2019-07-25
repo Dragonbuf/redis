@@ -20,7 +20,6 @@ func main() {
 		if Command == "set" {
 			db.SetString(&key, &Value)
 		} else if Command == "get" {
-			fmt.Println("get key", key)
 			fmt.Println(db.GetString(&key))
 		} else if Command == "exit" {
 			fmt.Println("good bye")

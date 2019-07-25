@@ -107,3 +107,6 @@ func (d *DictHt) MoveTableToNewByIndex(i int64, ht *DictHt) {
 func (d *DictHt) FinishedReHash(i int64) bool {
 	return d.size <= uint64(i)
 }
+func (d *DictHt) IsEmpty() bool {
+	return d.size <= 0
+}
