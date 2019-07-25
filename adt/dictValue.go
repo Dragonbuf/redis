@@ -12,7 +12,6 @@ func NewDictValue() *DictValue {
 }
 
 func (d *DictValue) ToString() string {
-
 	if d == nil {
 		return "<nil>"
 	}
@@ -30,4 +29,12 @@ func (d *DictValue) SetStringValue(value *string) *DictValue {
 	return &DictValue{
 		obj:       &Object{strObj: &StringObject{Sds: sds}},
 		valueType: DictvalueTypeStringObj}
+}
+
+func (d *DictValue) SetHashValue(filed *string, value *string) *DictValue {
+	dict := NewDict()
+	dict.HsetString(filed, value)
+	return &DictValue{
+		obj:       &Object{hashOjb: &HashObject{Dict: dict}},
+		valueType: DictvalueTypeHashObj}
 }

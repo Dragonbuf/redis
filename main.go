@@ -15,12 +15,17 @@ func main() {
 		fmt.Printf("go-redis ->  ")
 		Command := ""
 		key := ""
+		filed := ""
 		Value := ""
-		_, _ = fmt.Scanln(&Command, &key, &Value)
+		_, _ = fmt.Scanln(&Command, &key, &filed, &Value)
 		if Command == "set" {
-			db.SetString(&key, &Value)
+			db.SetString(&key, &filed)
 		} else if Command == "get" {
 			fmt.Println(db.GetString(&key))
+		} else if Command == "hset" {
+			db.HSetString(&key, &filed, &Value)
+		} else if Command == "hget" {
+			fmt.Println(db.HGetString(&key, &filed))
 		} else if Command == "exit" {
 			fmt.Println("good bye")
 			os.Exit(1)

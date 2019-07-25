@@ -1,6 +1,7 @@
 package adt
 
 const DictvalueTypeStringObj = "stringObj"
+const DictvalueTypeHashObj = "hashObj"
 
 // 类型特定函数
 type dicType string
@@ -31,6 +32,15 @@ func (d *Dict) HsetString(key, value *string) {
 
 func (d *Dict) HgetString(key *string) string {
 	return d.Hget(key).ToString()
+}
+
+func (d *Dict) HsetHash(key *string, filed *string, value *string) {
+	dictValue := NewDictValue().SetHashValue(filed, value)
+	d.Hset(key, dictValue)
+}
+
+func (d *Dict) HgetGetHash(key *string, filed *string) string {
+	return d.Hget(key).obj.hashOjb.Dict.Hget(filed).ToString()
 }
 
 // key 暂时只支持 string 吧
