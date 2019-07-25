@@ -8,16 +8,12 @@ import (
 func TestNewRedisDb(t *testing.T) {
 	db := NewRedisDb()
 
-	key := "hello"
-	key2 := "a"
-	value := "workd"
+	key := "fuck"
+	key2 := "c"
+	value := "you"
 
 	db.SetString(&key, &value)
-	db.SetString(&key, &value)
-	db.SetString(&key, &value)
-	db.SetString(&key, &value)
-	db.SetString(&key, &value)
-	db.GetString(&key2)
+
 	fmt.Println(db.GetString(&key2))
 
 	if db.GetString(&key2) != "<nil>" {
