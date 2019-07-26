@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	fmt.Println("[only support get set exit]  \n")
+	fmt.Println("[only support get set exit]\n ")
 
 	db := server.NewRedisDb()
 
