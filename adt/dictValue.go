@@ -17,7 +17,7 @@ func (d *DictValue) ToString() string {
 	}
 
 	if d.valueType != DictvalueTypeStringObj {
-		panic("can not user HgetString in dictValue where type is not string")
+		return "this key can not use get XXX,please use another command"
 	}
 
 	return string(*d.obj.strObj.Sds.buf)
@@ -37,4 +37,8 @@ func (d *DictValue) SetHashValue(filed *string, value *string) *DictValue {
 	return &DictValue{
 		obj:       &Object{hashOjb: &HashObject{Dict: dict}},
 		valueType: DictvalueTypeHashObj}
+}
+
+func (d *DictValue) SetHashObjValue(filed *string, value *string) {
+	d.obj.hashOjb.Dict.HsetString(filed, value)
 }

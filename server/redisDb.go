@@ -31,7 +31,8 @@ func (r *RedisDb) HSetString(key, filed, value *string) {
 	// 或者分两步，首先找到 getOrSetHash 然后在 set
 	dictValue := r.dict.Hget(key)
 	if dictValue != nil {
-		dictValue.SetHashValue(filed, value)
+		dictValue.SetHashObjValue(filed, value)
+		//dictValue.SetHashValue(filed, value)
 	} else {
 		r.dict.HsetHash(key, filed, value)
 	}

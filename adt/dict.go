@@ -40,6 +40,10 @@ func (d *Dict) HsetHash(key *string, filed *string, value *string) {
 }
 
 func (d *Dict) HgetGetHash(key *string, filed *string) string {
+	if d.Hget(key).valueType != DictvalueTypeHashObj {
+		return "this key is not hash, can not use this command"
+	}
+
 	return d.Hget(key).obj.hashOjb.Dict.Hget(filed).ToString()
 }
 
