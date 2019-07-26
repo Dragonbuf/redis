@@ -1,6 +1,7 @@
 package adt
 
 const DictvalueTypeStringObj = "stringObj"
+const DictvalueTypeHashObj = "hashObj"
 
 // 类型特定函数
 type dicType string
@@ -25,7 +26,6 @@ func NewDict() *Dict {
 }
 
 func (d *Dict) HsetString(key, value *string) {
-
 	dictValue := NewDictValue().SetStringValue(value)
 	d.Hset(key, dictValue)
 }
@@ -34,45 +34,30 @@ func (d *Dict) HgetString(key *string) string {
 	return d.Hget(key).ToString()
 }
 
-func (d *Dict) IsReHashing() bool {
-	return d.treHashIdx != -1
+func (d *Dict) HsetHash(key *string, filed *string, value *string) {
+	dictValue := NewDictValue().SetHashValue(filed, value)
+	d.Hset(key, dictValue)
+}
+
+func (d *Dict) HgetGetHash(key *string, filed *string) string {
+	if d.Hget(key).valueType != DictvalueTypeHashObj {
+		return "this key is not hash, can not use this command"
+	}
+
+	return d.Hget(key).obj.hashOjb.Dict.Hget(filed).ToString()
 }
 
 // key 暂时只支持 string 吧
 func (d *Dict) Hset(key *string, value *DictValue) {
 
-	dictHt := NewDictHt()
-
 	// 正在　rehash 插入只插入　ht[1],其他情况只插入　ht[0]
-	if d.IsReHashing() {
-		dictHt = &d.ht[1]
-	} else {
-		dictHt = &d.ht[0]
-	}
-
+	dictHt := d.GetWriteHt()
 	dictHt.AddDictValue(key, value)
 
+	// 插入完如果需要 rehash 则开始 rehash
 	if dictHt.ShouldReHash() {
-
 		d.BeginReHash()
-		var newDictHt *DictHt
-
-		// 如果　ht[1] 没有申请空间
-		if d.ht[1].size == 0 {
-			newDictHt = NewDictHt()
-			newDictHt.InitHtBySize(dictHt.size * 2) // todo 字节对齐申请的空间,这里简单申请 2 倍空间
-			d.ht[1] = *newDictHt
-		} else {
-			newDictHt = &d.ht[1]
-		}
-
-		dictHt.MoveTableToNewByIndex(d.treHashIdx, newDictHt)
-		d.FinishedCurrentIndexReHash()
-		if dictHt.FinishedReHash(d.treHashIdx) {
-			d.FinishedAllReHash()
-		}
 	}
-
 }
 
 func (d *Dict) Hget(key *string) *DictValue {
@@ -90,24 +75,40 @@ func (d *Dict) Hget(key *string) *DictValue {
 	return dictHt.findValue(key)
 }
 
-func (d *Dict) FinishedCurrentIndexReHash() {
-	d.treHashIdx++
-}
-
 func (d *Dict) FinishedAllReHash() {
 	d.ResetTreHashIdx()
 	d.SwapHt()
 	d.DestroyHt1()
 }
 
+func (d *Dict) BeginReHash() {
+	if !d.IsReHashing() {
+		d.treHashIdx++
+	}
+
+	writeHt := d.GetWriteHt()
+	readHt := d.GetReadHt()
+
+	// 如果　ht[1] 没有申请空间
+	if writeHt.IsEmpty() {
+		writeHt.InitHtBySize(readHt.size * 2)
+	}
+
+	readHt.MoveTableToNewByIndex(d.treHashIdx, writeHt)
+	d.FinishedCurrentIndexReHash()
+	if readHt.FinishedReHash(d.treHashIdx) {
+		d.FinishedAllReHash()
+	}
+}
+
+func (d *Dict) IsReHashing() bool {
+	return d.treHashIdx != -1
+}
 func (d *Dict) ResetTreHashIdx() {
 	d.treHashIdx = -1
 }
-
-func (d *Dict) BeginReHash() {
-	if d.treHashIdx == -1 {
-		d.treHashIdx++
-	}
+func (d *Dict) FinishedCurrentIndexReHash() {
+	d.treHashIdx++
 }
 
 func (d *Dict) SwapHt() {
@@ -116,6 +117,18 @@ func (d *Dict) SwapHt() {
 
 func (d *Dict) DestroyHt1() {
 	d.ht[1] = *NewDictHt()
+}
+
+func (d *Dict) GetWriteHt() *DictHt {
+	if d.IsReHashing() {
+		return &d.ht[1]
+	}
+
+	return &d.ht[0]
+}
+
+func (d *Dict) GetReadHt() *DictHt {
+	return &d.ht[0]
 }
 
 // 复制键函数

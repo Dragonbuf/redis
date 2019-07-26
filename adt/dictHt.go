@@ -24,9 +24,16 @@ func (d *DictHt) AddDictValue(key *string, value *DictValue) {
 	// 根据　hash 算法获取 index
 	index := d.GetIndex(d.GetHash(key))
 
+	// 查看是否　link 上有重复的　key
+	if existsEntry := d.FindSameKey(index, key); existsEntry != nil {
+		existsEntry.setValue(value)
+		return
+	}
+
 	entry := NewDictEntry()
 	entry.setKeyValue(key, value)
 
+	// hash 冲突了
 	if d.IsHashConflict(index) {
 		entry.next = d.table[index]
 		d.table[index] = entry
@@ -56,6 +63,23 @@ func (d *DictHt) IncrUsed() {
 
 func (d *DictHt) IsHashConflict(index uint64) bool {
 	return d.table[index] != nil
+}
+
+func (d *DictHt) HasSameKey(index uint64, key *string) bool {
+	return *d.table[index].key == *key
+}
+
+func (d *DictHt) FindSameKey(index uint64, key *string) *DictEntry {
+	tempFind := d.table[index]
+
+	for tempFind != nil {
+		if *tempFind.key == *key {
+			return tempFind
+		}
+		tempFind = tempFind.next
+	}
+
+	return nil
 }
 
 func (d *DictHt) ShouldReHash() bool {
@@ -106,4 +130,7 @@ func (d *DictHt) MoveTableToNewByIndex(i int64, ht *DictHt) {
 
 func (d *DictHt) FinishedReHash(i int64) bool {
 	return d.size <= uint64(i)
+}
+func (d *DictHt) IsEmpty() bool {
+	return d.size <= 0
 }

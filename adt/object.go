@@ -11,6 +11,7 @@ type StringObject struct {
 }
 
 type HashObject struct {
+	Dict *Dict
 }
 
 type ListObject struct {

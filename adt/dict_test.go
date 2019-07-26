@@ -8,6 +8,8 @@ func TestDict(t *testing.T) {
 	dict := NewDict()
 	k := "fuck"
 	v := "you"
+	k1 := "fuck"
+	v1 := "you"
 	k2 := "c"
 	v2 := "d"
 	k3 := "e"
@@ -15,6 +17,11 @@ func TestDict(t *testing.T) {
 	k4 := "g"
 
 	dict.HsetString(&k, &v)
+	dict.HsetString(&k1, &v1)
+
+	if used := dict.ht[0].used; used != 1 {
+		t.Error("dict ht[0] user error")
+	}
 
 	res := dict.HgetString(&k2)
 	if res == v {
