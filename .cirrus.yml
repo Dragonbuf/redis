@@ -10,4 +10,7 @@ test_task:
     folder: $GOPATH/pkg/mod
   get_script: go get ./...
   build_script: go build ./main.go
-  test_script: go test ./adt
+  test_script:
+        - go test ./adt
+        - go test ./server
+        - go test ./client
