@@ -4,66 +4,69 @@ package adt
 type Sdshdr struct {
 	len  int
 	free int
-	buf  *[]byte
+	buf  *[]byte //这里因为要展示 sds 的细节，所以还是使用 []byte 不是 *string , 但是 Get 返回会统一 *string 方便处理
 }
 
 func NewSdsHdr() *Sdshdr {
 	return &Sdshdr{}
 }
 
-func (s *Sdshdr) SetLen(len int) *Sdshdr {
-	s.len = len
-	return s
+func (sds *Sdshdr) SetLen(len int) *Sdshdr {
+	sds.len = len
+	return sds
 }
 
-func (s *Sdshdr) SetFree(free int) *Sdshdr {
-	s.free = free
-	return s
+func (sds *Sdshdr) SetFree(free int) *Sdshdr {
+	sds.free = free
+	return sds
 }
-func (s *Sdshdr) SetBuf(buf *[]byte) *Sdshdr {
-	s.buf = buf
-	return s
+func (sds *Sdshdr) SetBuf(buf *[]byte) *Sdshdr {
+	sds.buf = buf
+	return sds
 }
 
 func (sds *Sdshdr) Set(s *string) int {
-	len := len(*s)
+	i := len(*s)
 
-	// fmt.Printf("debug: 设置字符串 %s, 需要空间 %d \n", *s, len)
-	// 如果 sds 本身的 len 长度足够,直接更改
-	if sds.len >= len {
-		// fmt.Printf("debug: 空间　len %d 足够使用，直接赋值 \n", sds.len)
+	// 如果 sds 本身的 i 长度足够,直接更改
+	if sds.HasEnoughLen(i) {
 		buf := []byte(*s)
-		sds.buf = &buf
-		sds.len = len
+		sds.SetLen(i).SetBuf(&buf)
 		return 1
 	}
 
-	// 如果空间不够了 ,申请所需空间 2 倍的空间,赋值给　free 和 len
-	if (sds.free + sds.len) <= len {
-		// fmt.Printf("debug: 空间不够 len + free %d ，　共申请空间 %d \n", sds.free+sds.len, len*2)
-		buf := make([]byte, len*2)
-		sds.free = len
-		sds.len = len
-		buf = []byte(*s)
-		sds.buf = &buf
+	// 如果空间不够了 ,申请所需空间 2 倍的空间,分别赋值给　free 和 i
+	if !sds.HasEnoughLenWithFree(i) {
+		buf := []byte(*s)
+		sds.SetFree(i).SetLen(i).SetBuf(&buf)
+
 		return 1
 	} else {
-		// 如果 len + free 足够使用，那么就直接使用 buf 存储
-		// fmt.Printf("debug: 空间 len + free = %d 足够，　使用空间 \n", sds.len+sds.free)
-
+		// 如果 i + free 足够使用，那么就直接使用 buf 存储
 		buf := []byte(*s)
-		sds.buf = &buf
-		sds.free = len - sds.len
-		sds.len = len
+		sds.SetBuf(&buf).SetFree(i - sds.len).SetLen(i)
+
 		return 1
 	}
-
 }
 
-func (sds *Sdshdr) Get() string {
-	if sds.len == 0 {
-		return ""
+func (sds *Sdshdr) Get() *string {
+	if sds.IsEmpty() {
+		return nil
 	}
 
-	return string(*sds.buf)
+	str := string(*sds.buf)
+	return &str
+}
+
+func (sds *Sdshdr) IsEmpty() bool {
+	return sds.len == 0
+}
+
+func (sds *Sdshdr) HasEnoughLen(l int) bool {
+	return sds.len >= l
+}
+
+func (sds *Sdshdr) HasEnoughLenWithFree(l int) bool {
+	return sds.len+sds.free > l
 }

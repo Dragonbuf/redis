@@ -50,8 +50,7 @@ func (l *List) LPop() *string {
 		l.SetTail(nil)
 	}
 
-	str := node.Value.Get()
-	return &str
+	return node.Value.Get()
 }
 
 func (l *List) RPush(value *string) int {
@@ -80,8 +79,7 @@ func (l *List) RPop() *string {
 	l.SetTail(node.Prev)
 	l.decrLen()
 
-	str := node.Value.Get()
-	return &str
+	return node.Value.Get()
 }
 
 func (l *List) IncrLen() {
