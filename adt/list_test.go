@@ -5,30 +5,34 @@ import (
 )
 
 func TestList(t *testing.T) {
-	list := List{}
+	list := NewList()
 
-	list.Lpush("a")
-	list.Lpush("b")
+	a := "a"
+	b := "b"
+	list.LPush(&a)
+	list.LPush(&b)
 
-	if list.Lpop() != "b" {
+	if *list.LPop() != b {
 		t.Error("list lpop not equals 2")
 	}
-	if list.Lpop() != "a" {
+	if *list.LPop() != a {
 		t.Error("list lpop not equals 2")
 	}
 
-	list.Lpush("world")
-	list.Rpush("hello")
+	world := "world"
+	hello := "hello"
+	list.LPush(&world)
+	list.RPush(&hello)
 
-	if list.Rpop() != "hello" {
+	if *list.RPop() != hello {
 		t.Error("rpop error")
 	}
 
-	if list.Rpop() != "world" {
+	if *list.RPop() != world {
 		t.Error("rpop error")
 	}
 
-	if list.Rpop() != "0" {
+	if list.RPop() != nil {
 		t.Error("rpop error")
 	}
 

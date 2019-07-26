@@ -11,6 +11,20 @@ func NewSdsHdr() *Sdshdr {
 	return &Sdshdr{}
 }
 
+func (s *Sdshdr) SetLen(len int) *Sdshdr {
+	s.len = len
+	return s
+}
+
+func (s *Sdshdr) SetFree(free int) *Sdshdr {
+	s.free = free
+	return s
+}
+func (s *Sdshdr) SetBuf(buf *[]byte) *Sdshdr {
+	s.buf = buf
+	return s
+}
+
 func (sds *Sdshdr) Set(s *string) int {
 	len := len(*s)
 
