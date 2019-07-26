@@ -30,9 +30,9 @@ func (r *RedisDb) HSetString(key, filed, value *string) {
 	// todo 先 find ，如果找到了 hash 就使用之前的，找不到在重新生成
 	// 或者分两步，首先找到 getOrSetHash 然后在 set
 	dictValue := r.dict.Hget(key)
-	if dictValue != nil {
+
+	if dictValue != nil && dictValue.GetType() == adt.DictvalueTypeHashObj {
 		dictValue.SetHashObjValue(filed, value)
-		//dictValue.SetHashValue(filed, value)
 	} else {
 		r.dict.HsetHash(key, filed, value)
 	}

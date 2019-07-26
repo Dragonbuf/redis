@@ -23,6 +23,10 @@ func (d *DictValue) ToString() string {
 	return string(*d.obj.strObj.Sds.buf)
 }
 
+func (d *DictValue) GetType() string {
+	return d.valueType
+}
+
 func (d *DictValue) SetStringValue(value *string) *DictValue {
 	sds := NewSdsHdr()
 	sds.Set(value)
