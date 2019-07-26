@@ -1,81 +1,100 @@
 package adt
 
-// ListNode ...
-type ListNode struct {
-	Prev  *ListNode
-	Next  *ListNode
-	Value *Sdshdr
-}
-
-// List ...
 type List struct {
-	Head *ListNode
-	Tail *ListNode
-	Len  uint32
+	head *ListNode
+	tail *ListNode
+	len  uint64
 }
 
-// Lpush ...
-func (list *List) Lpush(value string) int {
+func NewList() *List {
+	return &List{}
+}
 
-	// 将字符串存入sds中
-	sdshdr := Sdshdr{}
-	sdshdr.Set(&value)
+func (l *List) SetHead(head *ListNode) *List {
+	l.head = head
+	return l
+}
+func (l *List) SetTail(tail *ListNode) *List {
+	l.tail = tail
+	return l
+}
 
-	list.Len++
-	if list.Len == 1 {
-		curr := &ListNode{nil, nil, &sdshdr}
-		list.Head = curr
-		list.Tail = curr
+func (l *List) LPush(value *string) int {
+
+	sds := NewSdsHdr()
+	sds.Set(value)
+
+	l.IncrLen()
+
+	if l.HasOneNode() {
+		node := NewListNode().SetValue(sds)
+		l.SetHead(node).SetTail(node)
 	} else {
-		list.Head = &ListNode{nil, list.Head, &sdshdr}
+		node := NewListNode().SetNext(l.head).SetValue(sds)
+		l.SetHead(node)
 	}
 
 	return 1
 }
 
-// Lpop ...
-func (list *List) Lpop() string {
-	pop := list.Head
-	if nil == pop {
-		return "0"
+func (l *List) LPop() *string {
+	node := l.head
+	if node == nil {
+		return nil
 	}
 
-	list.Head = pop.Next
-	list.Len--
-	if list.Len == 0 {
-		list.Tail = nil
+	l.SetHead(node.Next)
+	l.decrLen()
+
+	if l.IsEmpty() {
+		l.SetTail(nil)
 	}
 
-	return pop.Value.Get()
+	str := node.Value.Get()
+	return &str
 }
 
-// Rpush ...
-func (list *List) Rpush(value string) int {
-	// 将字符串存入sds中
-	sdshdr := Sdshdr{}
-	sdshdr.Set(&value)
+func (l *List) RPush(value *string) int {
 
-	list.Len++
-	if list.Len == 1 {
-		curr := &ListNode{nil, list.Tail, &sdshdr}
-		list.Head = curr
-		list.Tail = curr
+	sds := NewSdsHdr()
+	sds.Set(value)
+
+	l.IncrLen()
+	if l.HasOneNode() {
+		node := NewListNode().SetValue(sds)
+		l.SetHead(node).SetTail(node)
 	} else {
-		list.Tail = &ListNode{list.Tail, nil, &sdshdr}
+		node := NewListNode().SetValue(sds).SetPrev(l.tail)
+		l.SetTail(node)
 	}
 
 	return 1
 }
 
-// Rpop ...
-func (list *List) Rpop() string {
-	pop := list.Tail
-	if pop == nil {
-		return "0"
+func (l *List) RPop() *string {
+	node := l.tail
+	if node == nil {
+		return nil
 	}
 
-	list.Tail = pop.Prev
-	list.Len--
+	l.SetTail(node.Prev)
+	l.decrLen()
 
-	return pop.Value.Get()
+	str := node.Value.Get()
+	return &str
+}
+
+func (l *List) IncrLen() {
+	l.len++
+}
+func (l *List) decrLen() {
+	l.len--
+}
+
+func (l *List) HasOneNode() bool {
+	return l.len == 1
+}
+
+func (l *List) IsEmpty() bool {
+	return l.len == 0
 }
