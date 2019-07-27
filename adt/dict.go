@@ -44,7 +44,7 @@ func (d *Dict) HgetGetHash(key *string, filed *string) string {
 		return "this key is not hash, can not use this command"
 	}
 
-	return d.Hget(key).obj.hashOjb.Dict.Hget(filed).ToString()
+	return d.Hget(key).obj.Dict.Hget(filed).ToString()
 }
 
 // key 暂时只支持 string 吧

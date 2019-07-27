@@ -59,6 +59,10 @@ func (sds *Sdshdr) Get() *string {
 	return &str
 }
 
+func (sds *Sdshdr) GetLen() int {
+	return sds.len
+}
+
 func (sds *Sdshdr) IsEmpty() bool {
 	return sds.len == 0
 }

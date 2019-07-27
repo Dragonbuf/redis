@@ -20,7 +20,7 @@ func (d *DictValue) ToString() string {
 		return "this key can not use get XXX,please use another command"
 	}
 
-	return string(*d.obj.strObj.Sds.buf)
+	return string(*d.obj.buf)
 }
 
 func (d *DictValue) GetType() string {
@@ -31,7 +31,7 @@ func (d *DictValue) SetStringValue(value *string) *DictValue {
 	sds := NewSdsHdr()
 	sds.Set(value)
 	return &DictValue{
-		obj:       &Object{strObj: &StringObject{Sds: sds}},
+		obj:       &Object{StringObject: NewStringObject().SetSds(sds)},
 		valueType: DictvalueTypeStringObj}
 }
 
@@ -39,10 +39,10 @@ func (d *DictValue) SetHashValue(filed *string, value *string) *DictValue {
 	dict := NewDict()
 	dict.HsetString(filed, value)
 	return &DictValue{
-		obj:       &Object{hashOjb: &HashObject{Dict: dict}},
+		obj:       &Object{HashObject: &HashObject{Dict: dict}},
 		valueType: DictvalueTypeHashObj}
 }
 
 func (d *DictValue) SetHashObjValue(filed *string, value *string) {
-	d.obj.hashOjb.Dict.HsetString(filed, value)
+	d.obj.Dict.HsetString(filed, value)
 }
