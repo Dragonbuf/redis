@@ -14,39 +14,39 @@ func NewRedisDb() *RedisDb {
 	return db
 }
 
-func (r *RedisDb) Set(key *string, value *adt.DictValue) {
+func (r *RedisDb) Set(key, value *adt.StringObject) {
 	r.dict.Hset(key, value)
 }
 
-func (r *RedisDb) SetString(key, value *string) {
+func (r *RedisDb) SetString(key, value *adt.StringObject) {
 	r.dict.HsetString(key, value)
 }
 
-func (r *RedisDb) GetString(key *string) string {
+func (r *RedisDb) GetString(key *adt.StringObject) string {
 	return r.dict.HgetString(key)
 }
 
-func (r *RedisDb) HSetString(key, filed, value *string) {
+func (r *RedisDb) HSetString(key, filed, value *adt.StringObject) {
 	// todo 先 find ，如果找到了 hash 就使用之前的，找不到在重新生成
 	// 或者分两步，首先找到 getOrSetHash 然后在 set
 	dictValue := r.dict.Hget(key)
 
-	if dictValue != nil && dictValue.GetType() == adt.DictvalueTypeHashObj {
-		dictValue.SetHashObjValue(filed, value)
+	if dictValue != nil && dictValue.GetType() == adt.REDIS_ENCODING_HT {
+		dictValue.HashObject.Hset(filed, value)
 	} else {
 		r.dict.HsetHash(key, filed, value)
 	}
 }
 
-func (r *RedisDb) HGetString(key, filed *string) string {
+func (r *RedisDb) HGetString(key, filed *adt.StringObject) string {
 	return r.dict.HgetGetHash(key, filed)
 }
 
-func (r *RedisDb) SetHash(key *string, value *adt.DictValue) {
+func (r *RedisDb) SetHash(key, value *adt.StringObject) {
 	r.dict.Hset(key, value)
 }
 
-func (r *RedisDb) SetList(key *string, value *adt.DictValue) {
+func (r *RedisDb) SetList(key, value *adt.StringObject) {
 	r.dict.Hset(key, value)
 }
 

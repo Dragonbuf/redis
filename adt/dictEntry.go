@@ -1,24 +1,26 @@
 package adt
 
 type DictEntry struct {
-	key  *string
-	v    *DictValue
 	next *DictEntry
+	key  *StringObject
+	v    *DictValue
 }
 
 func NewDictEntry() *DictEntry {
 	return &DictEntry{}
 }
 
-func (d *DictEntry) setKey(key *string) {
+func (d *DictEntry) setKey(key *StringObject) *DictEntry {
 	d.key = key
+	return d
 }
 
-func (d *DictEntry) setValue(value *DictValue) {
-	d.v = value
-}
-
-func (d *DictEntry) setKeyValue(key *string, value *DictValue) {
-	d.setKey(key)
-	d.setValue(value)
+func (d *DictEntry) setValue(value *StringObject) *DictEntry {
+	if d.v == nil {
+		val := NewDictValue()
+		val.StringObject = value
+		d.v = val
+	}
+	d.v.StringObject = value
+	return d
 }

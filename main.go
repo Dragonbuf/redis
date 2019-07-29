@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"redis/adt"
 	"redis/server"
 )
 
@@ -19,21 +20,21 @@ func main() {
 		Value := ""
 		_, _ = fmt.Scanln(&Command, &key, &filed, &Value)
 		if Command == "set" {
-			db.SetString(&key, &filed)
+			db.SetString(adt.NewStringObject().SetString(&key), adt.NewStringObject().SetString(&filed))
 		} else if Command == "get" {
-			fmt.Println(db.GetString(&key))
+			fmt.Println(db.GetString(adt.NewStringObject().SetString(&key)))
 		} else if Command == "hset" {
 			if len(filed) == 0 || len(Value) == 0 {
 				fmt.Println("filed or value can not empty")
 				continue
 			}
-			db.HSetString(&key, &filed, &Value)
+			db.HSetString(adt.NewStringObject().SetString(&key), adt.NewStringObject().SetString(&filed), adt.NewStringObject().SetString(&Value))
 		} else if Command == "hget" {
 			if len(key) == 0 || len(filed) == 0 {
 				fmt.Println("filed or key can not empty")
 				continue
 			}
-			fmt.Println(db.HGetString(&key, &filed))
+			fmt.Println(db.HGetString(adt.NewStringObject().SetString(&key), adt.NewStringObject().SetString(&filed)))
 		} else if Command == "exit" {
 			fmt.Println("good bye")
 			os.Exit(1)

@@ -25,30 +25,29 @@ func NewDict() *Dict {
 		}}
 }
 
-func (d *Dict) HsetString(key, value *string) {
-	dictValue := NewDictValue().SetStringValue(value)
-	d.Hset(key, dictValue)
+func (d *Dict) HsetString(key, value *StringObject) {
+	d.Hset(key, value)
 }
 
-func (d *Dict) HgetString(key *string) string {
-	return d.Hget(key).ToString()
-}
-
-func (d *Dict) HsetHash(key *string, filed *string, value *string) {
-	dictValue := NewDictValue().SetHashValue(filed, value)
-	d.Hset(key, dictValue)
-}
-
-func (d *Dict) HgetGetHash(key *string, filed *string) string {
-	if d.Hget(key).valueType != DictvalueTypeHashObj {
-		return "this key is not hash, can not use this command"
+func (d *Dict) HgetString(key *StringObject) string {
+	if strObj := d.Hget(key); strObj == nil {
+		return "<nil>"
+	} else {
+		return *strObj.Get()
 	}
+}
 
-	return d.Hget(key).obj.Dict.Hget(filed).ToString()
+func (d *Dict) HsetHash(key, filed, value *StringObject) {
+
+	d.Hset(key, value)
+}
+
+func (d *Dict) HgetGetHash(key, filed *StringObject) string {
+	return *d.Hget(key).Get()
 }
 
 // key 暂时只支持 string 吧
-func (d *Dict) Hset(key *string, value *DictValue) {
+func (d *Dict) Hset(key, value *StringObject) {
 
 	// 正在　rehash 插入只插入　ht[1],其他情况只插入　ht[0]
 	dictHt := d.GetWriteHt()
@@ -60,7 +59,7 @@ func (d *Dict) Hset(key *string, value *DictValue) {
 	}
 }
 
-func (d *Dict) Hget(key *string) *DictValue {
+func (d *Dict) Hget(key *StringObject) *DictValue {
 
 	dictHt := NewDictHt()
 	dictHt = &d.ht[0]
@@ -94,8 +93,8 @@ func (d *Dict) BeginReHash() {
 		writeHt.InitHtBySize(readHt.size * 2)
 	}
 
-	readHt.MoveTableToNewByIndex(d.treHashIdx, writeHt)
-	d.FinishedCurrentIndexReHash()
+	i := readHt.MoveTableToNewByIndex(d.treHashIdx, writeHt)
+	d.FinishedCurrentIndexReHash(i)
 	if readHt.FinishedReHash(d.treHashIdx) {
 		d.FinishedAllReHash()
 	}
@@ -107,8 +106,8 @@ func (d *Dict) IsReHashing() bool {
 func (d *Dict) ResetTreHashIdx() {
 	d.treHashIdx = -1
 }
-func (d *Dict) FinishedCurrentIndexReHash() {
-	d.treHashIdx++
+func (d *Dict) FinishedCurrentIndexReHash(i int) {
+	d.treHashIdx += int64(i)
 }
 
 func (d *Dict) SwapHt() {
@@ -117,6 +116,9 @@ func (d *Dict) SwapHt() {
 
 func (d *Dict) DestroyHt1() {
 	d.ht[1] = *NewDictHt()
+	d.ht[1].used = 0
+	d.ht[1].size = 0
+	d.ht[1].sizeMask = 0
 }
 
 func (d *Dict) GetWriteHt() *DictHt {

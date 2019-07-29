@@ -19,7 +19,7 @@ func (d *DictHt) InitHtBySize(size uint64) {
 	d.table = make([]*DictEntry, int64(size))
 }
 
-func (d *DictHt) AddDictValue(key *string, value *DictValue) {
+func (d *DictHt) AddDictValue(key, value *StringObject) {
 
 	// 根据　hash 算法获取 index
 	index := d.GetIndex(d.GetHash(key))
@@ -31,7 +31,7 @@ func (d *DictHt) AddDictValue(key *string, value *DictValue) {
 	}
 
 	entry := NewDictEntry()
-	entry.setKeyValue(key, value)
+	entry.setKey(key).setValue(value)
 
 	// hash 冲突了
 	if d.IsHashConflict(index) {
@@ -44,9 +44,11 @@ func (d *DictHt) AddDictValue(key *string, value *DictValue) {
 	d.IncrUsed()
 }
 
-func (d *DictHt) GetHash(key *string) (hashVal uint64) {
+func (d *DictHt) GetHash(key *StringObject) (hashVal uint64) {
 
-	for _, v := range *key {
+	k := key.Get()
+
+	for _, v := range *k {
 		hashVal = (hashVal << 5) + uint64(v+1)
 	}
 
@@ -65,15 +67,15 @@ func (d *DictHt) IsHashConflict(index uint64) bool {
 	return d.table[index] != nil
 }
 
-func (d *DictHt) HasSameKey(index uint64, key *string) bool {
-	return *d.table[index].key == *key
+func (d *DictHt) HasSameKey(index uint64, key *StringObject) bool {
+	return *d.table[index].key.Get() == *key.Get()
 }
 
-func (d *DictHt) FindSameKey(index uint64, key *string) *DictEntry {
+func (d *DictHt) FindSameKey(index uint64, key *StringObject) *DictEntry {
 	tempFind := d.table[index]
 
 	for tempFind != nil {
-		if *tempFind.key == *key {
+		if *tempFind.key.Get() == *key.Get() {
 			return tempFind
 		}
 		tempFind = tempFind.next
@@ -83,10 +85,10 @@ func (d *DictHt) FindSameKey(index uint64, key *string) *DictEntry {
 }
 
 func (d *DictHt) ShouldReHash() bool {
-	return d.used >= d.sizeMask
+	return d.used >= d.size
 }
 
-func (d *DictHt) findValue(key *string) *DictValue {
+func (d *DictHt) findValue(key *StringObject) *DictValue {
 
 	index := d.GetIndex(d.GetHash(key))
 
@@ -95,7 +97,7 @@ func (d *DictHt) findValue(key *string) *DictValue {
 	}
 
 	if !d.IsLinked(index) {
-		if string(*d.table[index].key) == string(*key) {
+		if *d.table[index].key.Get() == *key.Get() {
 			return d.table[index].v
 		}
 		return nil
@@ -105,7 +107,8 @@ func (d *DictHt) findValue(key *string) *DictValue {
 	tempTable := d.table[index]
 
 	for tempTable != nil {
-		if *tempTable.key == *key {
+		if *tempTable.key.Get() == *key.Get() {
+
 			return tempTable.v
 		}
 		tempTable = tempTable.next
@@ -118,14 +121,17 @@ func (d *DictHt) IsLinked(index uint64) bool {
 	return d.table[index].next != nil
 }
 
-func (d *DictHt) MoveTableToNewByIndex(i int64, ht *DictHt) {
+func (d *DictHt) MoveTableToNewByIndex(i int64, ht *DictHt) int {
 
+	j := 0
 	// rehash 当前 treHashIndex 的数据
 	for d.table[i] != nil {
-		ht.AddDictValue(d.table[i].key, d.table[i].v)
-		ht.IncrUsed()
+		ht.AddDictValue(d.table[i].key, d.table[i].v.StringObject)
+		//ht.IncrUsed()
+		j++
 		d.table[i] = d.table[i].next
 	}
+	return j
 }
 
 func (d *DictHt) FinishedReHash(i int64) bool {
