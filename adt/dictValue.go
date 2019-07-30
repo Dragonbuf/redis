@@ -1,7 +1,10 @@
 package adt
 
 type DictValue struct {
-	obj       *Object
+	*StringObject
+	*HashObject
+	*ListObject
+	*RedisObject
 	int64Obj  int64
 	uint64Obj uint64
 	valueType string
@@ -11,16 +14,31 @@ func NewDictValue() *DictValue {
 	return &DictValue{}
 }
 
+func (d *DictValue) SetType(types string) *DictValue {
+	d.valueType = types
+	return d
+}
+func (d *DictValue) SetStringObject(obj *StringObject) *DictValue {
+	d.StringObject = obj
+	d.valueType = REDIS_STRING
+	return d
+}
+func (d *DictValue) SetHashObject(obj *HashObject) *DictValue {
+	d.HashObject = obj
+	d.valueType = REDIS_HASH
+	return d
+}
+
 func (d *DictValue) ToString() string {
 	if d == nil {
 		return "<nil>"
 	}
 
-	if d.valueType != DictvalueTypeStringObj {
+	if d.valueType != REDIS_STRING {
 		return "this key can not use get XXX,please use another command"
 	}
 
-	return string(*d.obj.buf)
+	return string(*d.buf)
 }
 
 func (d *DictValue) GetType() string {
@@ -31,18 +49,6 @@ func (d *DictValue) SetStringValue(value *string) *DictValue {
 	sds := NewSdsHdr()
 	sds.Set(value)
 	return &DictValue{
-		obj:       &Object{StringObject: NewStringObject().SetSds(sds)},
-		valueType: DictvalueTypeStringObj}
-}
-
-func (d *DictValue) SetHashValue(filed *string, value *string) *DictValue {
-	dict := NewDict()
-	dict.HsetString(filed, value)
-	return &DictValue{
-		obj:       &Object{HashObject: &HashObject{Dict: dict}},
-		valueType: DictvalueTypeHashObj}
-}
-
-func (d *DictValue) SetHashObjValue(filed *string, value *string) {
-	d.obj.Dict.HsetString(filed, value)
+		StringObject: NewStringObject().SetSds(sds),
+		valueType:    DictvalueTypeStringObj}
 }

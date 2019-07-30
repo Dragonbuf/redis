@@ -1,6 +1,9 @@
 package server
 
-import "redis/adt"
+import (
+	"errors"
+	"redis/adt"
+)
 
 // todo 先实现 dict 不然不好存储　redisDb
 type RedisDb struct {
@@ -14,40 +17,58 @@ func NewRedisDb() *RedisDb {
 	return db
 }
 
-func (r *RedisDb) Set(key *string, value *adt.DictValue) {
+func (r *RedisDb) Set(key *adt.StringObject, value *adt.DictValue) {
 	r.dict.Hset(key, value)
 }
 
-func (r *RedisDb) SetString(key, value *string) {
+func (r *RedisDb) SetString(key *adt.StringObject, value *adt.DictValue) {
 	r.dict.HsetString(key, value)
 }
 
-func (r *RedisDb) GetString(key *string) string {
-	return r.dict.HgetString(key)
+func (r *RedisDb) Get(key *adt.StringObject) string {
+	return r.dict.Hget(key).ToString()
 }
 
-func (r *RedisDb) HSetString(key, filed, value *string) {
-	// todo 先 find ，如果找到了 hash 就使用之前的，找不到在重新生成
-	// 或者分两步，首先找到 getOrSetHash 然后在 set
+func (r *RedisDb) HSet(key, filed, value *adt.StringObject) (err error) {
+
+	// 先找到 redisDb 中实际存值的　hash
 	dictValue := r.dict.Hget(key)
 
-	if dictValue != nil && dictValue.GetType() == adt.DictvalueTypeHashObj {
-		dictValue.SetHashObjValue(filed, value)
+	if dictValue != nil {
+		if dictValue.GetType() != adt.REDIS_HASH {
+			return errors.New("can not use another type")
+		}
+
+		dictValue.HashObject.Hset(filed, adt.NewDictValue().SetStringObject(value))
 	} else {
-		r.dict.HsetHash(key, filed, value)
+		// 先把 filed => value 的 dict 生成
+		dict := adt.NewDict().Hset(filed, adt.NewDictValue().SetStringObject(value))
+
+		// 再把 key => dict 存入 r.dict
+		r.dict = adt.NewDict().Hset(key, adt.NewDictValue().SetHashObject(adt.NewHashObject().SetDict(dict)))
 	}
+
+	return nil
 }
 
-func (r *RedisDb) HGetString(key, filed *string) string {
-	return r.dict.HgetGetHash(key, filed)
+func (r *RedisDb) HGet(key, filed *adt.StringObject) string {
+
+	// 先找到 redisDb 中实际存值的　hash
+	dictValue := r.dict.Hget(key)
+
+	if dictValue != nil {
+		if dictValue.GetType() != adt.REDIS_HASH {
+			return "can not use hget if not hash"
+		}
+
+		return dictValue.HashObject.Hget(filed).ToString()
+	}
+
+	return "not found"
 }
 
-func (r *RedisDb) SetHash(key *string, value *adt.DictValue) {
-	r.dict.Hset(key, value)
-}
+func (r *RedisDb) SetList(key, value *adt.StringObject) {
 
-func (r *RedisDb) SetList(key *string, value *adt.DictValue) {
-	r.dict.Hset(key, value)
 }
 
 func Test() {

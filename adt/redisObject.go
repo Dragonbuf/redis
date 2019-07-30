@@ -35,10 +35,6 @@ type Object struct {
 	*ListObject
 }
 
-type HashObject struct {
-	Dict *Dict
-}
-
 type ListObject struct {
 }
 
