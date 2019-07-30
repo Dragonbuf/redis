@@ -17,16 +17,16 @@ func TestDict(t *testing.T) {
 	k4 := "g"
 
 	ks := NewStringObject().SetString(&k)
-	vs := NewStringObject().SetString(&v)
+	vs := NewDictValue().SetStringObject(NewStringObject().SetString(&v))
 
 	ks1 := NewStringObject().SetString(&k1)
-	vs1 := NewStringObject().SetString(&v1)
+	vs1 := NewDictValue().SetStringObject(NewStringObject().SetString(&v1))
 
 	ks2 := NewStringObject().SetString(&k2)
-	vs2 := NewStringObject().SetString(&v2)
+	vs2 := NewDictValue().SetStringObject(NewStringObject().SetString(&v2))
 
 	ks3 := NewStringObject().SetString(&k3)
-	vs3 := NewStringObject().SetString(&v3)
+	vs3 := NewDictValue().SetStringObject(NewStringObject().SetString(&v3))
 
 	ks4 := NewStringObject().SetString(&k4)
 

@@ -27,9 +27,6 @@ type RedisObject struct {
 	types    string
 	encoding string
 	*Object  //这里指向了 object 指针
-	*StringObject
-	*HashObject
-	*ListObject
 }
 
 type Object struct {

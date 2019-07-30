@@ -25,7 +25,7 @@ func NewDict() *Dict {
 		}}
 }
 
-func (d *Dict) HsetString(key, value *StringObject) {
+func (d *Dict) HsetString(key *StringObject, value *DictValue) {
 	d.Hset(key, value)
 }
 
@@ -37,17 +37,12 @@ func (d *Dict) HgetString(key *StringObject) string {
 	}
 }
 
-func (d *Dict) HsetHash(key, filed, value *StringObject) {
-
-	d.Hset(key, value)
-}
-
 func (d *Dict) HgetGetHash(key, filed *StringObject) string {
 	return *d.Hget(key).Get()
 }
 
 // key 暂时只支持 string 吧
-func (d *Dict) Hset(key, value *StringObject) {
+func (d *Dict) Hset(key *StringObject, value *DictValue) *Dict {
 
 	// 正在　rehash 插入只插入　ht[1],其他情况只插入　ht[0]
 	dictHt := d.GetWriteHt()
@@ -57,6 +52,8 @@ func (d *Dict) Hset(key, value *StringObject) {
 	if dictHt.ShouldReHash() {
 		d.BeginReHash()
 	}
+
+	return d
 }
 
 func (d *Dict) Hget(key *StringObject) *DictValue {

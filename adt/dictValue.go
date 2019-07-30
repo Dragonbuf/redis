@@ -14,12 +14,27 @@ func NewDictValue() *DictValue {
 	return &DictValue{}
 }
 
+func (d *DictValue) SetType(types string) *DictValue {
+	d.valueType = types
+	return d
+}
+func (d *DictValue) SetStringObject(obj *StringObject) *DictValue {
+	d.StringObject = obj
+	d.valueType = REDIS_STRING
+	return d
+}
+func (d *DictValue) SetHashObject(obj *HashObject) *DictValue {
+	d.HashObject = obj
+	d.valueType = REDIS_HASH
+	return d
+}
+
 func (d *DictValue) ToString() string {
 	if d == nil {
 		return "<nil>"
 	}
 
-	if d.valueType != DictvalueTypeStringObj {
+	if d.valueType != REDIS_STRING {
 		return "this key can not use get XXX,please use another command"
 	}
 
@@ -36,16 +51,4 @@ func (d *DictValue) SetStringValue(value *string) *DictValue {
 	return &DictValue{
 		StringObject: NewStringObject().SetSds(sds),
 		valueType:    DictvalueTypeStringObj}
-}
-
-func (d *DictValue) SetHashValue(filed, value *StringObject) *DictValue {
-	dict := NewDict()
-	dict.HsetString(filed, value)
-	return &DictValue{
-		HashObject: &HashObject{Dict: dict},
-		valueType:  DictvalueTypeHashObj}
-}
-
-func (d *DictValue) SetHashObjValue(filed, value *StringObject) {
-	d.Dict.HsetString(filed, value)
 }

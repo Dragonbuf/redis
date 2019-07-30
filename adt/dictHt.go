@@ -19,7 +19,7 @@ func (d *DictHt) InitHtBySize(size uint64) {
 	d.table = make([]*DictEntry, int64(size))
 }
 
-func (d *DictHt) AddDictValue(key, value *StringObject) {
+func (d *DictHt) AddDictValue(key *StringObject, value *DictValue) {
 
 	// 根据　hash 算法获取 index
 	index := d.GetIndex(d.GetHash(key))
@@ -126,7 +126,7 @@ func (d *DictHt) MoveTableToNewByIndex(i int64, ht *DictHt) int {
 	j := 0
 	// rehash 当前 treHashIndex 的数据
 	for d.table[i] != nil {
-		ht.AddDictValue(d.table[i].key, d.table[i].v.StringObject)
+		ht.AddDictValue(d.table[i].key, d.table[i].v)
 		//ht.IncrUsed()
 		j++
 		d.table[i] = d.table[i].next

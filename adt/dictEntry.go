@@ -15,12 +15,7 @@ func (d *DictEntry) setKey(key *StringObject) *DictEntry {
 	return d
 }
 
-func (d *DictEntry) setValue(value *StringObject) *DictEntry {
-	if d.v == nil {
-		val := NewDictValue()
-		val.StringObject = value
-		d.v = val
-	}
-	d.v.StringObject = value
+func (d *DictEntry) setValue(value *DictValue) *DictEntry {
+	d.v = value
 	return d
 }
