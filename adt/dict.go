@@ -20,25 +20,9 @@ func NewDict() *Dict {
 	return &Dict{
 		treHashIdx: -1,
 		ht: [2]DictHt{
-			{table: make([]*DictEntry, 2), size: 2, sizeMask: 1, used: 0},
-			{table: []*DictEntry{}, size: 0, sizeMask: 0, used: 0},
+			*NewDictHt().InitHtBySize(2),
+			*NewDictHt(),
 		}}
-}
-
-func (d *Dict) HsetString(key *StringObject, value *DictValue) {
-	d.Hset(key, value)
-}
-
-func (d *Dict) HgetString(key *StringObject) string {
-	if strObj := d.Hget(key); strObj == nil {
-		return "<nil>"
-	} else {
-		return *strObj.Get()
-	}
-}
-
-func (d *Dict) HgetGetHash(key, filed *StringObject) string {
-	return *d.Hget(key).Get()
 }
 
 // key 暂时只支持 string 吧

@@ -30,8 +30,8 @@ func TestDict(t *testing.T) {
 
 	ks4 := NewStringObject().SetString(&k4)
 
-	dict.HsetString(ks, vs)
-	dict.HsetString(ks1, vs1)
+	dict.Hset(ks, vs)
+	dict.Hset(ks1, vs1)
 
 	// 完成了一次 rehash ，所以现在 size 是 4
 	if used := dict.ht[0].used; used != 1 {
@@ -41,26 +41,26 @@ func TestDict(t *testing.T) {
 		t.Error("dict ht[0] size error, Size:", size)
 	}
 
-	res := dict.HgetString(ks2)
-	if res == v {
+	res := dict.Hget(ks2)
+	if res.ToString() == v {
 		t.Error("hget k2 is wrong ", res)
 	}
 
-	dict.HsetString(ks2, vs2)
-	dict.HsetString(ks3, vs3)
+	dict.Hset(ks2, vs2)
+	dict.Hset(ks3, vs3)
 
-	res = dict.HgetString(ks)
-	if res != v {
+	res = dict.Hget(ks)
+	if res.ToString() != v {
 		t.Error("hget k is wrong ", res)
 	}
 
-	res = dict.HgetString(ks2)
-	if res != v2 {
+	res = dict.Hget(ks2)
+	if res.ToString() != v2 {
 		t.Error("hget k2 is wrong ", res)
 	}
 
-	res = dict.HgetString(ks4)
-	if res != "<nil>" {
+	res = dict.Hget(ks4)
+	if res.ToString() != "<nil>" {
 		t.Error("hget k4 is wrong ", res)
 	}
 

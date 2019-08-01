@@ -1,6 +1,7 @@
 package adt
 
 import (
+	"reflect"
 	"strconv"
 )
 
@@ -54,28 +55,35 @@ func (obj *RedisObject) SetPtr(ptr *Object) *RedisObject {
 	return obj
 }
 
-// 这里是 stringObj
-func (obj *RedisObject) SetIntStringObj(num int) {
-	object := &Object{NewStringObject().SetInt(num), nil, nil}
-	obj.SetEncoding(REDIS_ENCODING_INT).SetTypes(REDIS_STRING).SetPtr(object)
-}
+func (obj *RedisObject) Set(ptr interface{}) {
 
-func (obj *RedisObject) SetRawStringObj(str *string) {
+	// 如果统一封装，只能利用反射来确定
+	types := reflect.TypeOf(ptr).String()
+	switch types {
+	case "string":
 
-	sds := NewSdsHdr()
-	sds.Set(str)
+		str := reflect.ValueOf(ptr).String()
+		i := len(reflect.String.String())
+		if i > 32 {
+			sds := NewSdsHdr()
+			sds.Set(&str)
 
-	object := &Object{NewStringObject().SetSds(sds), nil, nil}
-	obj.SetEncoding(REDIS_ENCODING_RAW).SetTypes(REDIS_STRING).SetPtr(object)
-}
+			object := &Object{NewStringObject().SetSds(sds), nil, nil}
+			obj.SetEncoding(REDIS_ENCODING_RAW).SetTypes(REDIS_STRING).SetPtr(object)
+		} else { // 字符串长度小于 32 字节，使用 embstr ，申请释放内存只需一次 且保存在一块连续内存，更好利用缓存
+			sds := NewSdsHdr()
+			sds.Set(&str)
 
-// 字符串长度小于 32 字节，使用 embstr ，申请释放内存只需一次 且保存在一块连续内存，更好利用缓存
-func (obj *RedisObject) SetEmbStrStringObj(str *string) {
-	sds := NewSdsHdr()
-	sds.Set(str)
+			object := &Object{NewStringObject().SetSds(sds), nil, nil}
+			obj.SetEncoding(REDIS_ENCODING_EMBSTR).SetTypes(REDIS_STRING).SetPtr(object)
+		}
+	case "int":
+		num := int(reflect.Int)
+		object := &Object{NewStringObject().SetInt(num), nil, nil}
+		obj.SetEncoding(REDIS_ENCODING_INT).SetTypes(REDIS_STRING).SetPtr(object)
+	case "":
 
-	object := &Object{NewStringObject().SetSds(sds), nil, nil}
-	obj.SetEncoding(REDIS_ENCODING_EMBSTR).SetTypes(REDIS_STRING).SetPtr(object)
+	}
 }
 
 func (obj *RedisObject) Append(str *string) int {
@@ -92,7 +100,6 @@ func (obj *RedisObject) Append(str *string) int {
 	obj.Set(str)
 	return obj.GetLen()
 }
-
 func (obj *RedisObject) GetType() string {
 	return obj.types
 }
