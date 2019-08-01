@@ -21,10 +21,6 @@ func (r *RedisDb) Set(key *adt.StringObject, value *adt.DictValue) {
 	r.dict.Hset(key, value)
 }
 
-func (r *RedisDb) SetString(key *adt.StringObject, value *adt.DictValue) {
-	r.dict.HsetString(key, value)
-}
-
 func (r *RedisDb) Get(key *adt.StringObject) string {
 	return r.dict.Hget(key).ToString()
 }

@@ -14,6 +14,10 @@ func (obj *StringObject) SetInt(num int) *StringObject {
 	return obj
 }
 
+func (obj *StringObject) GetInt() int {
+	return obj.int
+}
+
 func (obj *StringObject) SetString(str *string) *StringObject {
 	obj.Sdshdr = NewSdsHdr()
 	obj.Sdshdr.Set(str)

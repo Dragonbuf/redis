@@ -11,12 +11,13 @@ func NewDictHt() *DictHt {
 	return &DictHt{}
 }
 
-func (d *DictHt) InitHtBySize(size uint64) {
+func (d *DictHt) InitHtBySize(size uint64) *DictHt {
 	d.size = size
 	d.used = 0
 	d.sizeMask = size - 1
 
 	d.table = make([]*DictEntry, int64(size))
+	return d
 }
 
 func (d *DictHt) AddDictValue(key *StringObject, value *DictValue) {
@@ -138,5 +139,5 @@ func (d *DictHt) FinishedReHash(i int64) bool {
 	return d.size <= uint64(i)
 }
 func (d *DictHt) IsEmpty() bool {
-	return d.size <= 0
+	return d == nil || d.size <= 0
 }

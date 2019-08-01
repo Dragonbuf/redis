@@ -28,6 +28,10 @@ func (d *DictValue) SetHashObject(obj *HashObject) *DictValue {
 	d.valueType = REDIS_HASH
 	return d
 }
+func (d *DictValue) SetRedisObject(obj *RedisObject) *DictValue {
+	d.RedisObject = obj
+	return d
+}
 
 func (d *DictValue) ToString() string {
 	if d == nil {
@@ -35,7 +39,7 @@ func (d *DictValue) ToString() string {
 	}
 
 	if d.valueType != REDIS_STRING {
-		return "this key can not use get XXX,please use another command"
+		return "this key type is [" + d.valueType + "] can not use get ,please use another command"
 	}
 
 	return string(*d.buf)
@@ -43,12 +47,4 @@ func (d *DictValue) ToString() string {
 
 func (d *DictValue) GetType() string {
 	return d.valueType
-}
-
-func (d *DictValue) SetStringValue(value *string) *DictValue {
-	sds := NewSdsHdr()
-	sds.Set(value)
-	return &DictValue{
-		StringObject: NewStringObject().SetSds(sds),
-		valueType:    DictvalueTypeStringObj}
 }

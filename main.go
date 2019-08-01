@@ -21,7 +21,7 @@ func main() {
 		_, _ = fmt.Scanln(&Command, &key, &filed, &Value)
 		if Command == "set" {
 
-			db.SetString(adt.NewStringObject().SetString(&key), adt.NewDictValue().SetStringObject(adt.NewStringObject().SetString(&filed)))
+			db.Set(adt.NewStringObject().SetString(&key), adt.NewDictValue().SetStringObject(adt.NewStringObject().SetString(&filed)))
 		} else if Command == "get" {
 			fmt.Println(db.Get(adt.NewStringObject().SetString(&key)))
 		} else if Command == "hset" {
