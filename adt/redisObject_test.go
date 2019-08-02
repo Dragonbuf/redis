@@ -1,6 +1,7 @@
 package adt
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -36,6 +37,10 @@ func TestNewRedisObject(t *testing.T) {
 	}
 
 	obj.Set("you")
+
+	if reflect.TypeOf(obj.Get()).String() != "*string" {
+		t.Error("wrong type", reflect.TypeOf(obj.Get()).String())
+	}
 
 	if obj.types != REDIS_STRING {
 		t.Error("wrong types")

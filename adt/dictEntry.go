@@ -3,7 +3,7 @@ package adt
 type DictEntry struct {
 	next *DictEntry
 	key  *StringObject
-	v    *DictValue
+	v    *DictValue // redisObj int64 uint64
 }
 
 func NewDictEntry() *DictEntry {
