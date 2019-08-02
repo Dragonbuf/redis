@@ -1,7 +1,7 @@
 package adt
 
 import (
-	"reflect"
+	"fmt"
 	"strconv"
 )
 
@@ -58,12 +58,11 @@ func (obj *RedisObject) SetPtr(ptr *Object) *RedisObject {
 func (obj *RedisObject) Set(ptr interface{}) {
 
 	// 如果统一封装，只能利用反射来确定
-	types := reflect.TypeOf(ptr).String()
-	switch types {
-	case "string":
-
-		str := reflect.ValueOf(ptr).String()
-		i := len(reflect.String.String())
+	switch ptr.(type) {
+	case string:
+		fmt.Println()
+		str := ptr.(string)
+		i := len(str)
 		if i > 32 {
 			sds := NewSdsHdr()
 			sds.Set(&str)
@@ -77,13 +76,29 @@ func (obj *RedisObject) Set(ptr interface{}) {
 			object := &Object{NewStringObject().SetSds(sds), nil, nil}
 			obj.SetEncoding(REDIS_ENCODING_EMBSTR).SetTypes(REDIS_STRING).SetPtr(object)
 		}
-	case "int":
-		num := int(reflect.Int)
+	case int:
+		num := ptr.(int)
 		object := &Object{NewStringObject().SetInt(num), nil, nil}
 		obj.SetEncoding(REDIS_ENCODING_INT).SetTypes(REDIS_STRING).SetPtr(object)
-	case "":
-
+	default:
+		panic("error type")
 	}
+}
+
+func (obj *RedisObject) Get() interface{} {
+
+	switch obj.types {
+	case REDIS_STRING:
+		switch obj.encoding {
+		case REDIS_ENCODING_INT:
+			return obj.int
+		default:
+			return obj.Sdshdr.Get()
+		}
+	default:
+		return nil
+	}
+
 }
 
 func (obj *RedisObject) Append(str *string) int {
