@@ -1,7 +1,6 @@
 package server
 
 import (
-	"redis/adt"
 	"testing"
 )
 
@@ -11,12 +10,12 @@ func TestNewRedisDb(t *testing.T) {
 	key2 := "c"
 	value := "you"
 
-	db.Set(adt.NewStringObject().SetString(&key), adt.NewDictValue().SetStringObject(adt.NewStringObject().SetString(&value)))
-	if db.Get(adt.NewStringObject().SetString(&key2)) != "<nil>" {
+	if db.Get(key2) != "<nil>" {
 		t.Error("nil key found value")
 	}
 
-	if db.Get(adt.NewStringObject().SetString(&key)) != value {
+	db.Set(key, value)
+	if db.Get(key) != value {
 		t.Error("value not found")
 	}
 }
@@ -30,21 +29,27 @@ func TestHashSet(t *testing.T) {
 	filed2 := "c2"
 	value2 := "you2"
 
-	err := db.HSet(adt.NewStringObject().SetString(&key), adt.NewStringObject().SetString(&filed), adt.NewStringObject().SetString(&value))
+	filed3 := "c3"
+
+	err := db.HSet(key, filed, value)
 	if err != nil {
 		t.Error(err)
 	}
 
-	err = db.HSet(adt.NewStringObject().SetString(&key), adt.NewStringObject().SetString(&filed2), adt.NewStringObject().SetString(&value2))
+	err = db.HSet(key, filed2, value2)
 	if err != nil {
 		t.Error(err)
 	}
 
-	if db.HGet(adt.NewStringObject().SetString(&key), adt.NewStringObject().SetString(&filed2)) != value2 {
-		t.Error("keys2 error")
+	if db.HGet(key, filed) != value {
+		t.Error("not equal value " + value)
 	}
 
-	if db.HGet(adt.NewStringObject().SetString(&key), adt.NewStringObject().SetString(&filed)) != value {
-		t.Error("keys2 error")
+	if db.HGet(key, filed2) != value2 {
+		t.Error("not equal value " + value2)
+	}
+
+	if db.HGet(key, filed3) != "<nil>" {
+		t.Error("not equal filed3 " + filed3)
 	}
 }

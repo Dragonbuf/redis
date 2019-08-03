@@ -16,19 +16,19 @@ func TestDict(t *testing.T) {
 	v3 := "f"
 	k4 := "g"
 
-	ks := NewStringObject().SetString(&k)
-	vs := NewDictValue().SetStringObject(NewStringObject().SetString(&v))
+	ks := NewRedisObject().Set(&k)
+	vs := NewRedisObject().Set(&v)
 
-	ks1 := NewStringObject().SetString(&k1)
-	vs1 := NewDictValue().SetStringObject(NewStringObject().SetString(&v1))
+	ks1 := NewRedisObject().Set(&k1)
+	vs1 := NewRedisObject().Set(&v1)
 
-	ks2 := NewStringObject().SetString(&k2)
-	vs2 := NewDictValue().SetStringObject(NewStringObject().SetString(&v2))
+	ks2 := NewRedisObject().Set(&k2)
+	vs2 := NewRedisObject().Set(&v2)
 
-	ks3 := NewStringObject().SetString(&k3)
-	vs3 := NewDictValue().SetStringObject(NewStringObject().SetString(&v3))
+	ks3 := NewRedisObject().Set(&k3)
+	vs3 := NewRedisObject().Set(&v3)
 
-	ks4 := NewStringObject().SetString(&k4)
+	ks4 := NewRedisObject().Set(&k4)
 
 	dict.Hset(ks, vs)
 	dict.Hset(ks1, vs1)
@@ -41,27 +41,27 @@ func TestDict(t *testing.T) {
 		t.Error("dict ht[0] size error, Size:", size)
 	}
 
-	res := dict.Hget(ks2)
-	if res.ToString() == v {
-		t.Error("hget k2 is wrong ", res)
+	redisObject := dict.Hget(ks2)
+	if redisObject != nil {
+		t.Error("hget k2 is wrong ", redisObject)
 	}
 
 	dict.Hset(ks2, vs2)
 	dict.Hset(ks3, vs3)
 
-	res = dict.Hget(ks)
-	if res.ToString() != v {
-		t.Error("hget k is wrong ", res)
+	redisObject = dict.Hget(ks)
+	if *redisObject.Sdshdr.Get() != v {
+		t.Error("hget k is wrong ", redisObject)
 	}
 
-	res = dict.Hget(ks2)
-	if res.ToString() != v2 {
-		t.Error("hget k2 is wrong ", res)
+	redisObject = dict.Hget(ks2)
+	if *redisObject.Sdshdr.Get() != v2 {
+		t.Error("hget k2 is wrong ", redisObject)
 	}
 
-	res = dict.Hget(ks4)
-	if res.ToString() != "<nil>" {
-		t.Error("hget k4 is wrong ", res)
+	redisObject = dict.Hget(ks4)
+	if redisObject != nil {
+		t.Error("hget k4 is wrong ", redisObject)
 	}
 
 }

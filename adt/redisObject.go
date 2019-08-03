@@ -1,7 +1,7 @@
 package adt
 
 import (
-	"fmt"
+	"errors"
 	"strconv"
 )
 
@@ -31,16 +31,15 @@ type RedisObject struct {
 }
 
 type Object struct {
-	*StringObject
-	*HashObject
-	*ListObject
-}
-
-type ListObject struct {
+	int
+	*Sdshdr
+	*Dict
 }
 
 func NewRedisObject() *RedisObject {
-	return &RedisObject{}
+	obj := &RedisObject{}
+	obj.Object = &Object{}
+	return obj
 }
 func (obj *RedisObject) SetTypes(types string) *RedisObject {
 	obj.types = types
@@ -55,36 +54,66 @@ func (obj *RedisObject) SetPtr(ptr *Object) *RedisObject {
 	return obj
 }
 
-func (obj *RedisObject) Set(ptr interface{}) {
+// 可以设置 int string
+func (obj *RedisObject) Set(ptr interface{}) *RedisObject {
 
-	// 如果统一封装，只能利用反射来确定
 	switch ptr.(type) {
-	case string:
-		fmt.Println()
-		str := ptr.(string)
-		i := len(str)
+	case *string:
+		str := ptr.(*string)
+		i := len(*str)
 		if i > 32 {
-			sds := NewSdsHdr()
-			sds.Set(&str)
+			obj.Sdshdr = NewSdsHdr()
+			obj.Sdshdr.Set(str)
 
-			object := &Object{NewStringObject().SetSds(sds), nil, nil}
-			obj.SetEncoding(REDIS_ENCODING_RAW).SetTypes(REDIS_STRING).SetPtr(object)
+			obj.SetEncoding(REDIS_ENCODING_RAW).SetTypes(REDIS_STRING)
 		} else { // 字符串长度小于 32 字节，使用 embstr ，申请释放内存只需一次 且保存在一块连续内存，更好利用缓存
-			sds := NewSdsHdr()
-			sds.Set(&str)
+			obj.Sdshdr = NewSdsHdr()
+			obj.Sdshdr.Set(str)
 
-			object := &Object{NewStringObject().SetSds(sds), nil, nil}
-			obj.SetEncoding(REDIS_ENCODING_EMBSTR).SetTypes(REDIS_STRING).SetPtr(object)
+			obj.SetEncoding(REDIS_ENCODING_EMBSTR).SetTypes(REDIS_STRING)
 		}
 	case int:
-		num := ptr.(int)
-		object := &Object{NewStringObject().SetInt(num), nil, nil}
-		obj.SetEncoding(REDIS_ENCODING_INT).SetTypes(REDIS_STRING).SetPtr(object)
+		obj.int = ptr.(int)
+		obj.SetEncoding(REDIS_ENCODING_INT).SetTypes(REDIS_STRING)
 	default:
 		panic("error type")
 	}
+
+	return obj
 }
 
+// 可以设置 int string   todo: 刚开始是　ziplist 后期改成 dict
+func (obj *RedisObject) Hset(filed interface{}, value interface{}) {
+
+	obj.SetTypes(REDIS_HASH).SetEncoding(REDIS_ENCODING_HT)
+
+	filedObj := NewRedisObject()
+	filedObj.Set(filed)
+
+	vObj := NewRedisObject()
+	vObj.Set(value)
+
+	if obj.Dict != nil {
+		obj.Dict.Hset(filedObj, vObj)
+	} else {
+		obj.Dict = NewDict().Hset(filedObj, vObj)
+	}
+
+}
+
+func (obj *RedisObject) HGet(filed interface{}) (*RedisObject, error) {
+
+	if obj.types != REDIS_HASH {
+		return nil, errors.New("type not redis_hash")
+	}
+
+	filedObj := NewRedisObject()
+	filedObj.Set(filed)
+
+	return obj.Dict.Hget(filedObj), nil
+}
+
+// 暂时未实现方法
 func (obj *RedisObject) Get() interface{} {
 
 	switch obj.types {

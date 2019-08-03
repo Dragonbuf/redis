@@ -20,7 +20,7 @@ func (d *DictHt) InitHtBySize(size uint64) *DictHt {
 	return d
 }
 
-func (d *DictHt) AddDictValue(key *StringObject, value *DictValue) {
+func (d *DictHt) AddDictValue(key *RedisObject, value *RedisObject) {
 
 	// 根据　hash 算法获取 index
 	index := d.GetIndex(d.GetHash(key))
@@ -45,9 +45,9 @@ func (d *DictHt) AddDictValue(key *StringObject, value *DictValue) {
 	d.IncrUsed()
 }
 
-func (d *DictHt) GetHash(key *StringObject) (hashVal uint64) {
+func (d *DictHt) GetHash(key *RedisObject) (hashVal uint64) {
 
-	k := key.Get()
+	k := key.Sdshdr.Get()
 
 	for _, v := range *k {
 		hashVal = (hashVal << 5) + uint64(v+1)
@@ -68,15 +68,15 @@ func (d *DictHt) IsHashConflict(index uint64) bool {
 	return d.table[index] != nil
 }
 
-func (d *DictHt) HasSameKey(index uint64, key *StringObject) bool {
-	return *d.table[index].key.Get() == *key.Get()
+func (d *DictHt) HasSameKey(index uint64, key *RedisObject) bool {
+	return *d.table[index].key.Sdshdr.Get() == *key.Sdshdr.Get()
 }
 
-func (d *DictHt) FindSameKey(index uint64, key *StringObject) *DictEntry {
+func (d *DictHt) FindSameKey(index uint64, key *RedisObject) *DictEntry {
 	tempFind := d.table[index]
 
 	for tempFind != nil {
-		if *tempFind.key.Get() == *key.Get() {
+		if *tempFind.key.Sdshdr.Get() == *key.Sdshdr.Get() {
 			return tempFind
 		}
 		tempFind = tempFind.next
@@ -89,7 +89,7 @@ func (d *DictHt) ShouldReHash() bool {
 	return d.used >= d.size
 }
 
-func (d *DictHt) findValue(key *StringObject) *DictValue {
+func (d *DictHt) findValue(key *RedisObject) *RedisObject {
 
 	index := d.GetIndex(d.GetHash(key))
 
@@ -98,7 +98,7 @@ func (d *DictHt) findValue(key *StringObject) *DictValue {
 	}
 
 	if !d.IsLinked(index) {
-		if *d.table[index].key.Get() == *key.Get() {
+		if *d.table[index].key.Sdshdr.Get() == *key.Sdshdr.Get() {
 			return d.table[index].v
 		}
 		return nil
@@ -108,7 +108,7 @@ func (d *DictHt) findValue(key *StringObject) *DictValue {
 	tempTable := d.table[index]
 
 	for tempTable != nil {
-		if *tempTable.key.Get() == *key.Get() {
+		if *tempTable.key.Sdshdr.Get() == *key.Sdshdr.Get() {
 
 			return tempTable.v
 		}
@@ -140,4 +140,8 @@ func (d *DictHt) FinishedReHash(i int64) bool {
 }
 func (d *DictHt) IsEmpty() bool {
 	return d == nil || d.size <= 0
+}
+
+func (d *DictHt) CompareKey(a *RedisObject, b *RedisObject) bool {
+	return *a.Sdshdr.Get() == *b.Sdshdr.Get()
 }
