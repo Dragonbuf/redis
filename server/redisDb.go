@@ -17,56 +17,65 @@ func NewRedisDb() *RedisDb {
 	return db
 }
 
-func (r *RedisDb) Set(key *adt.StringObject, value *adt.DictValue) {
-	r.dict.Hset(key, value)
+func (r *RedisDb) Set(key, value string) {
+	r.dict.Hset(adt.NewRedisObject().Set(&key), adt.NewRedisObject().Set(&value))
 }
 
-func (r *RedisDb) Get(key *adt.StringObject) string {
-	return r.dict.Hget(key).ToString()
+func (r *RedisDb) Get(key string) string {
+	tarObj := r.dict.Hget(adt.NewRedisObject().Set(&key))
+	if tarObj == nil {
+		return "<nil>"
+	}
+	return *tarObj.Sdshdr.Get()
 }
 
-func (r *RedisDb) HSet(key, filed, value *adt.StringObject) (err error) {
+func (r *RedisDb) HSet(key, filed, value string) (err error) {
+
+	k := adt.NewRedisObject().Set(&key)
 
 	// 先找到 redisDb 中实际存值的　hash
-	dictValue := r.dict.Hget(key)
+	existsRedisObj := r.dict.Hget(k)
 
-	if dictValue != nil {
-		if dictValue.GetType() != adt.REDIS_HASH {
+	if existsRedisObj != nil {
+		if existsRedisObj.GetType() != adt.REDIS_HASH {
 			return errors.New("can not use another type")
 		}
 
-		dictValue.HashObject.Hset(filed, adt.NewDictValue().SetStringObject(value))
+		existsRedisObj.Hset(&filed, &value)
 	} else {
-		// 先把 filed => value 的 dict 生成
-		dict := adt.NewDict().Hset(filed, adt.NewDictValue().SetStringObject(value))
+		redisObj := adt.NewRedisObject()
+		redisObj.Hset(&filed, &value)
 
 		// 再把 key => dict 存入 r.dict
-		r.dict = adt.NewDict().Hset(key, adt.NewDictValue().SetHashObject(adt.NewHashObject().SetDict(dict)))
+		r.dict = adt.NewDict().Hset(k, redisObj)
 	}
 
 	return nil
 }
 
-func (r *RedisDb) HGet(key, filed *adt.StringObject) string {
+func (r *RedisDb) HGet(key, filed string) string {
 
-	// 先找到 redisDb 中实际存值的　hash
-	dictValue := r.dict.Hget(key)
+	k := adt.NewRedisObject().Set(&key)
+	f := adt.NewRedisObject().Set(&filed)
+	existsRedisObj := r.dict.Hget(k)
 
-	if dictValue != nil {
-		if dictValue.GetType() != adt.REDIS_HASH {
-			return "can not use hget if not hash"
+	if existsRedisObj != nil {
+		if existsRedisObj.GetType() != adt.REDIS_HASH {
+			return "can not use this get " + existsRedisObj.GetType()
 		}
 
-		return dictValue.HashObject.Hget(filed).ToString()
+		targetObj := existsRedisObj.Hget(f)
+
+		if targetObj == nil {
+			return "<nil>"
+		}
+
+		return *targetObj.Sdshdr.Get()
 	}
 
-	return "not found"
+	return "<nil>"
 }
 
 func (r *RedisDb) SetList(key, value *adt.StringObject) {
-
-}
-
-func Test() {
 
 }

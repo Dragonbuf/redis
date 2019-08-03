@@ -1,8 +1,5 @@
 package adt
 
-const DictvalueTypeStringObj = "stringObj"
-const DictvalueTypeHashObj = "hashObj"
-
 // 类型特定函数
 type dicType string
 
@@ -26,7 +23,7 @@ func NewDict() *Dict {
 }
 
 // key 暂时只支持 string 吧
-func (d *Dict) Hset(key *StringObject, value *DictValue) *Dict {
+func (d *Dict) Hset(key *RedisObject, value *RedisObject) *Dict {
 
 	// 正在　rehash 插入只插入　ht[1],其他情况只插入　ht[0]
 	dictHt := d.GetWriteHt()
@@ -40,10 +37,9 @@ func (d *Dict) Hset(key *StringObject, value *DictValue) *Dict {
 	return d
 }
 
-func (d *Dict) Hget(key *StringObject) *DictValue {
+func (d *Dict) Hget(key *RedisObject) *RedisObject {
 
-	dictHt := NewDictHt()
-	dictHt = &d.ht[0]
+	dictHt := &d.ht[0]
 	value := dictHt.findValue(key)
 
 	// 如果正在　rehash 需要分别查询　ht0 ht1 是否存在
