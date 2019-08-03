@@ -65,3 +65,16 @@ func TestDict(t *testing.T) {
 	}
 
 }
+
+func BenchmarkNewDict(b *testing.B) {
+
+	dict := NewDict()
+	k := "fuck"
+	ks := NewRedisObject().Set(&k)
+
+	for i := 0; i < b.N; i++ {
+		str := NewRedisObject().Set(i)
+		dict.Hset(ks, str)
+	}
+
+}

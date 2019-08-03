@@ -55,3 +55,12 @@ func TestNewRedisObject(t *testing.T) {
 		t.Error("wrong int ", *obj.Sdshdr.Get())
 	}
 }
+
+func BenchmarkRedisObject_Set(b *testing.B) {
+
+	obj := NewRedisObject()
+	for i := 0; i < b.N; i++ {
+		obj.Set(i)
+	}
+
+}
