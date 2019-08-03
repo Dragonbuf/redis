@@ -25,6 +25,7 @@ func TestHashSet(t *testing.T) {
 	key := "fuck"
 	filed := "c"
 	value := "you"
+	value1 := "notyouasc"
 
 	filed2 := "c2"
 	value2 := "you2"
@@ -51,5 +52,38 @@ func TestHashSet(t *testing.T) {
 
 	if db.HGet(key, filed3) != "<nil>" {
 		t.Error("not equal filed3 " + filed3)
+	}
+
+	err = db.HSet(key, filed, value1)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if db.HGet(key, filed) == value {
+		t.Error("not equal value " + db.HGet(key, filed))
+	}
+	if db.HGet(key, filed) != value1 {
+		t.Error("not equal value1 " + value1)
+	}
+}
+
+func TestRedisDb_Del(t *testing.T) {
+	db := NewRedisDb()
+	db.Set("a", "b")
+	db.Del("a")
+
+	if db.Get("a") != "<nil>" {
+		t.Error("can not get del key")
+	}
+}
+
+func TestRedisDb_Hdel(t *testing.T) {
+	db := NewRedisDb()
+	_ = db.HSet("a", "1", "1")
+	_ = db.HSet("a", "2", "2")
+	db.Hdel("a", "1")
+
+	if db.HGet("a", "1") != "<nil>" {
+		t.Error("can not get hdel key")
 	}
 }

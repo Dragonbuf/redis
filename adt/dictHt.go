@@ -109,13 +109,37 @@ func (d *DictHt) findValue(key *RedisObject) *RedisObject {
 
 	for tempTable != nil {
 		if *tempTable.key.Sdshdr.Get() == *key.Sdshdr.Get() {
-
 			return tempTable.v
 		}
 		tempTable = tempTable.next
 	}
 
 	return nil
+}
+
+func (d *DictHt) delValue(key *RedisObject) int {
+
+	index := d.GetIndex(d.GetHash(key))
+	if d.table == nil || d.table[index] == nil {
+		return 0
+	}
+
+	// next  有数据
+	tempTable := d.table[index]
+	for tempTable != nil {
+		if *tempTable.key.Sdshdr.Get() == *key.Sdshdr.Get() {
+			//tempTable.v
+			if tempTable.next != nil {
+				d.table[index] = tempTable.next
+			}
+
+			tempTable.v = nil
+			d.used--
+		}
+		tempTable = tempTable.next
+	}
+
+	return 1
 }
 
 func (d *DictHt) IsLinked(index uint64) bool {

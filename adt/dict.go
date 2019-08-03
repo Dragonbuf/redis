@@ -42,13 +42,31 @@ func (d *Dict) Hget(key *RedisObject) *RedisObject {
 	dictHt := &d.ht[0]
 	value := dictHt.findValue(key)
 
-	// 如果正在　rehash 需要分别查询　ht0 ht1 是否存在
-	if !d.IsReHashing() || value != nil {
+	if value != nil {
 		return value
+	}
+
+	// 如果正在　rehash 需要分别查询　ht0 ht1 是否存在
+	if !d.IsReHashing() {
+		return nil
 	}
 
 	dictHt = &d.ht[1]
 	return dictHt.findValue(key)
+}
+
+func (d *Dict) Hdel(key *RedisObject) int {
+
+	dictHt := &d.ht[0]
+	status := dictHt.delValue(key)
+
+	// 如果正在　rehash 需要分别查询　ht0 ht1 是否存在
+	if status == 0 && d.IsReHashing() {
+		dictHt = &d.ht[1]
+		status = dictHt.delValue(key)
+	}
+
+	return status
 }
 
 func (d *Dict) FinishedAllReHash() {
