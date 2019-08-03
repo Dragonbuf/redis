@@ -76,6 +76,30 @@ func (r *RedisDb) HGet(key, filed string) string {
 	return "<nil>"
 }
 
+func (r *RedisDb) Del(key string) int {
+	return r.dict.Hdel(adt.NewRedisObject().Set(&key))
+}
+
+func (r *RedisDb) Hdel(key, filed string) int {
+
+	k := adt.NewRedisObject().Set(&key)
+	f := adt.NewRedisObject().Set(&filed)
+	existsRedisObj := r.dict.Hget(k)
+
+	if existsRedisObj != nil {
+		if existsRedisObj.GetType() != adt.REDIS_HASH {
+			return 0
+		}
+		return existsRedisObj.Hdel(f)
+	}
+
+	return 0
+}
+
+func (r *RedisDb) GetDict() *adt.Dict {
+	return r.dict
+}
+
 func (r *RedisDb) SetList(key, value *adt.StringObject) {
 
 }
