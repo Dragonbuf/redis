@@ -6,9 +6,8 @@ import (
 )
 
 func TestNewRedisObject(t *testing.T) {
-	// set 1
-	ptr := &Object{1, nil, nil, nil}
-	obj := NewRedisObject().SetTypes(REDIS_STRING).SetEncoding(REDIS_ENCODING_INT).SetPtr(ptr)
+
+	obj := NewRedisObject().SetTypes(REDIS_STRING).SetEncoding(REDIS_ENCODING_INT).SetPtr(&Object{})
 
 	if obj.types != REDIS_STRING {
 		t.Error("wrong types")
@@ -16,10 +15,6 @@ func TestNewRedisObject(t *testing.T) {
 
 	if obj.encoding != REDIS_ENCODING_INT {
 		t.Error("wrong encoding")
-	}
-
-	if obj.int != 1 {
-		t.Error("wrong int")
 	}
 
 	obj.Set(4)

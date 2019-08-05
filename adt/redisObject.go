@@ -35,6 +35,7 @@ type Object struct {
 	*Sdshdr
 	*Dict
 	*List
+	int64 // 存储过期时间
 }
 
 func NewRedisObject() *RedisObject {
@@ -76,6 +77,8 @@ func (obj *RedisObject) Set(ptr interface{}) *RedisObject {
 	case int:
 		obj.int = ptr.(int)
 		obj.SetEncoding(REDIS_ENCODING_INT).SetTypes(REDIS_STRING)
+	case int64:
+		obj.int64 = ptr.(int64)
 	default:
 		panic("error type")
 	}
@@ -166,4 +169,8 @@ func (obj *RedisObject) GetType() string {
 }
 func (obj *RedisObject) GetEncoding() string {
 	return obj.encoding
+}
+
+func (obj *RedisObject) GetExpireSecond() int64 {
+	return obj.int64
 }

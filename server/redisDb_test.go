@@ -109,3 +109,17 @@ func TestRedisDb_RPush(t *testing.T) {
 		t.Error("pop not <nil>")
 	}
 }
+
+func TestRedisDb_Expire(t *testing.T) {
+	db := NewRedisDb()
+	key := "fuck"
+	filed := "c"
+	value := "you"
+
+	err := db.HSet(key, filed, value)
+	if err != nil {
+		t.Error(err)
+	}
+
+	db.Expire(key, "2")
+}

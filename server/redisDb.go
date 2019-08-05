@@ -3,10 +3,15 @@ package server
 import (
 	"errors"
 	"redis/adt"
+	"strconv"
+	"time"
 )
 
+const NIL_STRING = "<nil>"
+
 type RedisDb struct {
-	dict *adt.Dict // 数据库空间，保存所有键值对
+	dict   *adt.Dict // 数据库空间，保存所有键值对
+	expire *adt.Dict // 过期字典，保存键过期时间
 }
 
 func NewRedisDb() *RedisDb {
@@ -23,7 +28,7 @@ func (r *RedisDb) Set(key, value string) {
 func (r *RedisDb) Get(key string) string {
 	tarObj := r.dict.Hget(adt.NewRedisObject().Set(&key))
 	if tarObj == nil {
-		return "<nil>"
+		return NIL_STRING
 	}
 	return *tarObj.Sdshdr.Get()
 }
@@ -66,13 +71,13 @@ func (r *RedisDb) HGet(key, filed string) string {
 		targetObj := existsRedisObj.Hget(f)
 
 		if targetObj == nil {
-			return "<nil>"
+			return NIL_STRING
 		}
 
 		return *targetObj.Sdshdr.Get()
 	}
 
-	return "<nil>"
+	return NIL_STRING
 }
 
 func (r *RedisDb) Del(key string) int {
@@ -108,4 +113,35 @@ func (r *RedisDb) RPop(key string) string {
 		return "<nil>"
 	}
 	return *tarObj.List.RPop().Sdshdr.Get()
+}
+func (r *RedisDb) Expire(key, value string) int {
+
+	if r.expire == nil {
+		dict := adt.NewDict()
+		r.expire = dict
+	}
+
+	second, err := strconv.Atoi(value)
+	if err != nil {
+		return 0
+	}
+
+	i := time.Now().Unix() + int64(second)
+	r.expire.Hset(adt.NewRedisObject().Set(&key), adt.NewRedisObject().Set(i))
+	return 1
+}
+
+func (r *RedisDb) IsExpired(key string) bool {
+
+	if r.expire == nil {
+		return false
+	}
+
+	obj := r.expire.Hget(adt.NewRedisObject().Set(&key))
+
+	if obj == nil {
+		return false
+	}
+
+	return obj.GetExpireSecond() < time.Now().Unix()
 }

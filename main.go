@@ -14,7 +14,7 @@ var Filed string
 var Value string
 
 func main() {
-	fmt.Println("[only support get set exit]\n ")
+	fmt.Println("[only support get set hset hget del hdel expire exit]\n ")
 
 	db = server.NewRedisDb()
 
@@ -25,32 +25,57 @@ func main() {
 		Filed = ""
 		Value = ""
 		_, _ = fmt.Scanln(&Command, &Key, &Filed, &Value)
+		DoCommand(Command, Key, Filed, Value)
 
-		switch Command {
-		case "set":
-			set(Key, Filed)
-		case "get":
-			get(Key)
-		case "hset":
-			Hset(Key, Filed, Value)
-		case "hget":
-			Hget(Key, Filed)
-		case "del":
-			del(Key)
-		case "hdel":
-			hdel(Key, Filed)
-		case "rpush":
-			Rpush(Key, Filed, Value)
-		case "rpop":
-			Rpop(Key)
-		case "exit":
-			fmt.Println("good bye")
-			os.Exit(1)
-		default:
-			fmt.Println("not found or support ths command :" + Command)
-		}
 	}
 
+}
+
+func DoCommand(command, key, filed, value string) {
+
+	if command == "quit" {
+		fmt.Println("good bye")
+		os.Exit(1)
+	}
+
+	if len(command) == 0 || len(key) == 0 {
+		fmt.Println("command or key can not empty")
+		return
+	}
+
+	// todo del this key, 现在仅仅判断过期返回过期
+	if db.IsExpired(key) {
+		fmt.Println(key + " expired 了")
+		return
+	}
+
+	switch command {
+	case "set":
+		set(key, filed)
+	case "get":
+		get(key)
+	case "hset":
+		Hset(key, filed, value)
+	case "hget":
+		Hget(key, filed)
+	case "rpush":
+		Rpush(Key, Filed, Value)
+	case "rpop":
+		Rpop(Key)
+
+	case "del":
+		del(key)
+	case "hdel":
+		hdel(key, filed)
+	case "expire":
+		expire(key, filed)
+	default:
+		fmt.Println("not found or support ths command :" + command)
+	}
+}
+
+func expire(key, filed string) {
+	db.Expire(key, filed)
 }
 
 func hdel(key, filed string) {
