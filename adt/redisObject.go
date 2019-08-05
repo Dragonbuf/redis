@@ -34,6 +34,7 @@ type Object struct {
 	int
 	*Sdshdr
 	*Dict
+	*List
 }
 
 func NewRedisObject() *RedisObject {
@@ -111,6 +112,22 @@ func (obj *RedisObject) HGet(filed interface{}) (*RedisObject, error) {
 	filedObj.Set(filed)
 
 	return obj.Dict.Hget(filedObj), nil
+}
+
+func (obj *RedisObject) RPush(strings []string) {
+	obj.SetTypes(REDIS_LIST).SetEncoding(REDIS_ENCODING_LINKEDLIST)
+	obj.List = NewList()
+
+	for _, v := range strings {
+		obj.List.RPush(NewRedisObject().Set(&v))
+	}
+}
+func (obj *RedisObject) RPop() *RedisObject {
+	if obj.List == nil {
+		return nil
+	}
+
+	return obj.List.RPop()
 }
 
 // 暂时未实现方法

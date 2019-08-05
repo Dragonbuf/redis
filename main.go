@@ -39,6 +39,10 @@ func main() {
 			del(Key)
 		case "hdel":
 			hdel(Key, Filed)
+		case "rpush":
+			Rpush(Key, Filed, Value)
+		case "rpop":
+			Rpop(Key)
 		case "exit":
 			fmt.Println("good bye")
 			os.Exit(1)
@@ -90,4 +94,27 @@ func Hget(key, filed string) {
 		return
 	}
 	fmt.Println(db.HGet(key, filed))
+}
+
+func Rpush(key, filed, value string) {
+
+	if len(key) == 0 || len(filed) == 0 {
+		fmt.Println("value or key can not empty")
+		return
+	}
+
+	if len(value) == 0 {
+		db.RPush(key, filed)
+	} else {
+		db.RPush(key, filed, value)
+	}
+}
+
+func Rpop(key string) {
+	if len(key) == 0 {
+		fmt.Println("key can not empty")
+		return
+	}
+
+	fmt.Println(db.RPop(key))
 }

@@ -5,7 +5,6 @@ import (
 	"redis/adt"
 )
 
-// todo 先实现 dict 不然不好存储　redisDb
 type RedisDb struct {
 	dict *adt.Dict // 数据库空间，保存所有键值对
 }
@@ -96,10 +95,17 @@ func (r *RedisDb) Hdel(key, filed string) int {
 	return 0
 }
 
-func (r *RedisDb) GetDict() *adt.Dict {
-	return r.dict
+func (r *RedisDb) RPush(key string, value ...string) {
+	obj := adt.NewRedisObject()
+	obj.RPush(value)
+
+	r.dict.Hset(adt.NewRedisObject().Set(&key), obj)
 }
 
-func (r *RedisDb) SetList(key, value *adt.StringObject) {
-
+func (r *RedisDb) RPop(key string) string {
+	tarObj := r.dict.Hget(adt.NewRedisObject().Set(&key))
+	if tarObj == nil || tarObj.List.IsEmpty() {
+		return "<nil>"
+	}
+	return *tarObj.List.RPop().Sdshdr.Get()
 }

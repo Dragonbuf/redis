@@ -7,7 +7,7 @@ import (
 
 func TestNewRedisObject(t *testing.T) {
 	// set 1
-	ptr := &Object{1, nil, nil}
+	ptr := &Object{1, nil, nil, nil}
 	obj := NewRedisObject().SetTypes(REDIS_STRING).SetEncoding(REDIS_ENCODING_INT).SetPtr(ptr)
 
 	if obj.types != REDIS_STRING {

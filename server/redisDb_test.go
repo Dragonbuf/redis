@@ -87,3 +87,25 @@ func TestRedisDb_Hdel(t *testing.T) {
 		t.Error("can not get hdel key")
 	}
 }
+
+func TestRedisDb_RPush(t *testing.T) {
+
+	db := NewRedisDb()
+
+	listName := "newList"
+	a := "a"
+	b := "b"
+
+	db.RPush(listName, a, b)
+	if db.RPop(listName) != b {
+		t.Error("pop not b")
+	}
+
+	if db.RPop(listName) != a {
+		t.Error("pop not a")
+	}
+
+	if db.RPop(listName) != "<nil>" {
+		t.Error("pop not <nil>")
+	}
+}

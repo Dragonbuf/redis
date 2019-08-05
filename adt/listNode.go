@@ -3,14 +3,14 @@ package adt
 type ListNode struct {
 	Prev  *ListNode
 	Next  *ListNode
-	Value *Sdshdr
+	Value *RedisObject
 }
 
 func NewListNode() *ListNode {
 	return &ListNode{}
 }
 
-func (l *ListNode) SetValue(value *Sdshdr) *ListNode {
+func (l *ListNode) SetValue(value *RedisObject) *ListNode {
 	l.Value = value
 	return l
 }

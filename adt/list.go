@@ -19,25 +19,22 @@ func (l *List) SetTail(tail *ListNode) *List {
 	return l
 }
 
-func (l *List) LPush(value *string) int {
-
-	sds := NewSdsHdr()
-	sds.Set(value)
+func (l *List) LPush(value *RedisObject) int {
 
 	l.IncrLen()
 
 	if l.HasOneNode() {
-		node := NewListNode().SetValue(sds)
+		node := NewListNode().SetValue(value)
 		l.SetHead(node).SetTail(node)
 	} else {
-		node := NewListNode().SetNext(l.head).SetValue(sds)
+		node := NewListNode().SetNext(l.head).SetValue(value)
 		l.SetHead(node)
 	}
 
 	return 1
 }
 
-func (l *List) LPop() *string {
+func (l *List) LPop() *RedisObject {
 	node := l.head
 	if node == nil {
 		return nil
@@ -50,27 +47,24 @@ func (l *List) LPop() *string {
 		l.SetTail(nil)
 	}
 
-	return node.Value.Get()
+	return node.Value
 }
 
-func (l *List) RPush(value *string) int {
-
-	sds := NewSdsHdr()
-	sds.Set(value)
+func (l *List) RPush(value *RedisObject) int {
 
 	l.IncrLen()
 	if l.HasOneNode() {
-		node := NewListNode().SetValue(sds)
+		node := NewListNode().SetValue(value)
 		l.SetHead(node).SetTail(node)
 	} else {
-		node := NewListNode().SetValue(sds).SetPrev(l.tail)
+		node := NewListNode().SetValue(value).SetPrev(l.tail)
 		l.SetTail(node)
 	}
 
 	return 1
 }
 
-func (l *List) RPop() *string {
+func (l *List) RPop() *RedisObject {
 	node := l.tail
 	if node == nil {
 		return nil
@@ -79,7 +73,7 @@ func (l *List) RPop() *string {
 	l.SetTail(node.Prev)
 	l.decrLen()
 
-	return node.Value.Get()
+	return node.Value
 }
 
 func (l *List) IncrLen() {
