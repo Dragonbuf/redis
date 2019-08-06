@@ -33,7 +33,7 @@ func main() {
 
 func DoCommand(command, key, filed, value string) {
 
-	if command == "quit" {
+	if command == "exit" {
 		fmt.Println("good bye")
 		os.Exit(1)
 	}
@@ -45,8 +45,8 @@ func DoCommand(command, key, filed, value string) {
 
 	// todo del this key, 现在仅仅判断过期返回过期
 	if db.IsExpired(key) {
-		fmt.Println(key + " expired 了")
-		return
+		db.Del(key)
+		db.DelExpire(key)
 	}
 
 	switch command {
@@ -62,7 +62,6 @@ func DoCommand(command, key, filed, value string) {
 		Rpush(Key, Filed, Value)
 	case "rpop":
 		Rpop(Key)
-
 	case "del":
 		del(key)
 	case "hdel":
@@ -75,6 +74,10 @@ func DoCommand(command, key, filed, value string) {
 }
 
 func expire(key, filed string) {
+	if len(key) == 0 || len(filed) == 0 {
+		fmt.Println("filed or key can not empty")
+		return
+	}
 	db.Expire(key, filed)
 }
 

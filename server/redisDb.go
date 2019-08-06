@@ -145,3 +145,7 @@ func (r *RedisDb) IsExpired(key string) bool {
 
 	return obj.GetExpireSecond() < time.Now().Unix()
 }
+
+func (r *RedisDb) DelExpire(key string) int {
+	return r.expire.Hdel(adt.NewRedisObject().Set(&key))
+}
