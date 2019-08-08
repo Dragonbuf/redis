@@ -5,21 +5,25 @@ import (
 	_ "net/http/pprof"
 	"os"
 	"redis/server"
+	"strconv"
 )
 
 var db *server.RedisDb
+var Server *server.RedisServer
 var Command string
 var Key string
 var Filed string
 var Value string
+var CurrentDb int
 
 func main() {
 	fmt.Println("[only support get set hset hget del hdel expire exit]\n ")
 
-	db = server.NewRedisDb()
+	Server = server.NewRedisServer()
+	db = Server.Select(0)
 
 	for {
-		fmt.Printf("go-redis ->  ")
+		fmt.Printf("go-redis " + strconv.Itoa(CurrentDb) + "->  ")
 		Command = ""
 		Key = ""
 		Filed = ""
@@ -43,8 +47,18 @@ func DoCommand(command, key, filed, value string) {
 		return
 	}
 
-	// todo del this key, 现在仅仅判断过期返回过期
-	if db.IsExpired(key) {
+	if command == "select" {
+		dbNum, _ := strconv.Atoi(key)
+		if dbNum > Server.GetDbNum() {
+			fmt.Println("dbNum error")
+			return
+		}
+		db = Server.Select(dbNum)
+		CurrentDb = dbNum
+		return
+	}
+
+	if db.ExpireIfNeeded(key) {
 		db.Del(key)
 		db.DelExpire(key)
 	}

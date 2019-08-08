@@ -131,7 +131,7 @@ func (r *RedisDb) Expire(key, value string) int {
 	return 1
 }
 
-func (r *RedisDb) IsExpired(key string) bool {
+func (r *RedisDb) ExpireIfNeeded(key string) bool {
 
 	if r.expire == nil {
 		return false
