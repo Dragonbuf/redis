@@ -28,6 +28,7 @@ type RedisObject struct {
 	types    string
 	encoding string
 	*Object  //这里指向了 object 指针
+	lru      int64
 }
 
 type Object struct {

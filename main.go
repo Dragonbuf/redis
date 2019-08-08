@@ -63,6 +63,11 @@ func DoCommand(command, key, filed, value string) {
 		db.DelExpire(key)
 	}
 
+	// todo 改写这里 使用 clientCmd 管理参数及命令
+
+	// todo 多个 list 时，需要 incr 多次
+	Server.IncrDirty()
+
 	switch command {
 	case "set":
 		set(key, filed)
