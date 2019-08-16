@@ -1,11 +1,13 @@
 package main
 
 import (
-	"fmt"
+	. "fmt"
 	_ "net/http/pprof"
 	"os"
 	"redis/server"
+	"redis/tool"
 	"strconv"
+	"time"
 )
 
 var db *server.RedisDb
@@ -16,21 +18,55 @@ var Filed string
 var Value string
 var CurrentDb int
 
+func testGoroutineWithTimeOut() {
+
+	done := make(chan struct{})
+	errChan := make(chan error)
+
+	pool := tool.NewGoroutinePool(10)
+	for i := 0; i < 10; i++ {
+		pool.Add(1)
+		go func() {
+			pool.Done()
+
+			println("bg save ing")
+			//if err!=nil{
+			//	errChan<-errors.New("error")
+			//}
+		}()
+	}
+
+	// wg.Wait()此时也要go出去,防止在wg.Wait()出堵住
+	go func() {
+		pool.Wait()
+		close(done)
+	}()
+
+	select {
+	// 错误快返回 既可以使用 return nil, err
+	case err := <-errChan:
+		println(err)
+		// 正常结束完成
+	case <-done:
+		// 超时
+	case <-time.After(500 * time.Millisecond):
+	}
+}
+
 func main() {
-	fmt.Println("[only support get set hset hget del hdel expire exit]\n ")
+	Println("[only support get set hset hget del hdel expire exit]\n ")
 
 	Server = server.NewRedisServer()
 	db = Server.Select(0)
 
 	for {
-		fmt.Printf("go-redis " + strconv.Itoa(CurrentDb) + "->  ")
+		Printf("go-redis " + strconv.Itoa(CurrentDb) + "->  ")
 		Command = ""
 		Key = ""
 		Filed = ""
 		Value = ""
-		_, _ = fmt.Scanln(&Command, &Key, &Filed, &Value)
+		_, _ = Scanln(&Command, &Key, &Filed, &Value)
 		DoCommand(Command, Key, Filed, Value)
-
 	}
 
 }
@@ -38,19 +74,19 @@ func main() {
 func DoCommand(command, key, filed, value string) {
 
 	if command == "exit" {
-		fmt.Println("good bye")
+		Println("good bye")
 		os.Exit(1)
 	}
 
 	if len(command) == 0 || len(key) == 0 {
-		fmt.Println("command or key can not empty")
+		Println("command or key can not empty")
 		return
 	}
 
 	if command == "select" {
 		dbNum, _ := strconv.Atoi(key)
 		if dbNum > Server.GetDbNum() {
-			fmt.Println("dbNum error")
+			Println("dbNum error")
 			return
 		}
 		db = Server.Select(dbNum)
@@ -88,29 +124,29 @@ func DoCommand(command, key, filed, value string) {
 	case "expire":
 		expire(key, filed)
 	default:
-		fmt.Println("not found or support ths command :" + command)
+		Println("not found or support ths command :" + command)
 	}
 }
 
 func expire(key, filed string) {
 	if len(key) == 0 || len(filed) == 0 {
-		fmt.Println("filed or key can not empty")
+		Println("filed or key can not empty")
 		return
 	}
 	db.Expire(key, filed)
 }
 
 func hdel(key, filed string) {
-	fmt.Println(db.Hdel(key, filed))
+	Println(db.Hdel(key, filed))
 }
 
 func del(key string) {
-	fmt.Println(db.Del(key))
+	Println(db.Del(key))
 }
 
 func set(key, filed string) {
 	if len(key) == 0 || len(filed) == 0 {
-		fmt.Println("filed or key can not empty")
+		Println("filed or key can not empty")
 		return
 	}
 	db.Set(key, filed)
@@ -118,35 +154,35 @@ func set(key, filed string) {
 
 func get(key string) {
 	if len(key) == 0 {
-		fmt.Println("key can not empty")
+		Println("key can not empty")
 		return
 	}
-	fmt.Println(db.Get(key))
+	Println(db.Get(key))
 }
 
 func Hset(key, filed, value string) {
 	if len(filed) == 0 || len(value) == 0 || len(key) == 0 {
-		fmt.Println("filed or value can not empty")
+		Println("filed or value can not empty")
 		return
 	}
 	err := db.HSet(key, filed, value)
 	if err != nil {
-		fmt.Println(err)
+		Println(err)
 	}
 }
 
 func Hget(key, filed string) {
 	if len(key) == 0 || len(filed) == 0 {
-		fmt.Println("filed or key can not empty")
+		Println("filed or key can not empty")
 		return
 	}
-	fmt.Println(db.HGet(key, filed))
+	Println(db.HGet(key, filed))
 }
 
 func Rpush(key, filed, value string) {
 
 	if len(key) == 0 || len(filed) == 0 {
-		fmt.Println("value or key can not empty")
+		Println("value or key can not empty")
 		return
 	}
 
@@ -159,9 +195,9 @@ func Rpush(key, filed, value string) {
 
 func Rpop(key string) {
 	if len(key) == 0 {
-		fmt.Println("key can not empty")
+		Println("key can not empty")
 		return
 	}
 
-	fmt.Println(db.RPop(key))
+	Println(db.RPop(key))
 }
