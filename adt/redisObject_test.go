@@ -7,23 +7,23 @@ import (
 
 func TestNewRedisObject(t *testing.T) {
 
-	obj := NewRedisObject().SetTypes(REDIS_STRING).SetEncoding(REDIS_ENCODING_INT).SetPtr(&Object{})
+	obj := NewRedisObject().SetTypes(RedisString).SetEncoding(RedisEncodingInt).SetPtr(&Object{})
 
-	if obj.types != REDIS_STRING {
+	if obj.types != RedisString {
 		t.Error("wrong types")
 	}
 
-	if obj.encoding != REDIS_ENCODING_INT {
+	if obj.encoding != RedisEncodingInt {
 		t.Error("wrong encoding")
 	}
 
 	obj.Set(4)
 
-	if obj.types != REDIS_STRING {
+	if obj.types != RedisString {
 		t.Error("wrong types")
 	}
 
-	if obj.encoding != REDIS_ENCODING_INT {
+	if obj.encoding != RedisEncodingInt {
 		t.Error("wrong encoding")
 	}
 
@@ -38,11 +38,11 @@ func TestNewRedisObject(t *testing.T) {
 		t.Error("wrong type", reflect.TypeOf(obj.Get()).String())
 	}
 
-	if obj.types != REDIS_STRING {
+	if obj.types != RedisString {
 		t.Error("wrong types")
 	}
 
-	if obj.encoding != REDIS_ENCODING_EMBSTR {
+	if obj.encoding != RedisEncodingEmbstr {
 		t.Error("wrong encoding")
 	}
 

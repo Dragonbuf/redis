@@ -41,7 +41,7 @@ func (r *RedisDb) HSet(key, filed, value string) (err error) {
 	existsRedisObj := r.dict.Hget(k)
 
 	if existsRedisObj != nil {
-		if existsRedisObj.GetType() != adt.REDIS_HASH {
+		if existsRedisObj.GetType() != adt.RedisHash {
 			return errors.New("can not use another type")
 		}
 
@@ -64,7 +64,7 @@ func (r *RedisDb) HGet(key, filed string) string {
 	existsRedisObj := r.dict.Hget(k)
 
 	if existsRedisObj != nil {
-		if existsRedisObj.GetType() != adt.REDIS_HASH {
+		if existsRedisObj.GetType() != adt.RedisHash {
 			return "can not use this get " + existsRedisObj.GetType()
 		}
 
@@ -91,7 +91,7 @@ func (r *RedisDb) Hdel(key, filed string) int {
 	existsRedisObj := r.dict.Hget(k)
 
 	if existsRedisObj != nil {
-		if existsRedisObj.GetType() != adt.REDIS_HASH {
+		if existsRedisObj.GetType() != adt.RedisHash {
 			return 0
 		}
 		return existsRedisObj.Hdel(f)

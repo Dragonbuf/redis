@@ -7,21 +7,21 @@ import (
 
 // type
 const (
-	REDIS_STRING = "string" // int embstr raw
-	REDIS_LIST   = "list"   // ziplist linkedlist
-	REDIS_HASH   = "hash"   // ziplist ht
-	REDIS_SET    = "set"    // intset ht
-	REDIS_ZSET   = "zset"   // ziplist skiplist
+	RedisString = "string" // int embstr raw
+	RedisList   = "list"   // ziplist linkedlist
+	RedisHash   = "hash"   // ziplist ht
+	RedisSet    = "set"    // intset ht
+	RedisZset   = "zset"   // ziplist skiplist
 
 	// encoding
-	REDIS_ENCODING_INT        = "int"
-	REDIS_ENCODING_EMBSTR     = "embstr"
-	REDIS_ENCODING_RAW        = "raw"
-	REDIS_ENCODING_HT         = "hashtable"
-	REDIS_ENCODING_LINKEDLIST = "linkedlist"
-	REDIS_ENCODING_ZIPLIST    = "ziplist"
-	REDIS_ENCODING_INTSET     = "intset"
-	REDIS_ENCODING_SKIPLIST   = "skiplist"
+	RedisEncodingInt        = "int"
+	RedisEncodingEmbstr     = "embstr"
+	RedisEncodingRaw        = "raw"
+	RedisEncodingHt         = "hashtable"
+	RedisEncodingLinkedlist = "linkedlist"
+	RedisEncodingZiplist    = "ziplist"
+	RedisEncodingIntset     = "intset"
+	RedisEncodingSkiplist   = "skiplist"
 )
 
 type RedisObject struct {
@@ -68,16 +68,16 @@ func (obj *RedisObject) Set(ptr interface{}) *RedisObject {
 			obj.Sdshdr = NewSdsHdr()
 			obj.Sdshdr.Set(str)
 
-			obj.SetEncoding(REDIS_ENCODING_RAW).SetTypes(REDIS_STRING)
+			obj.SetEncoding(RedisEncodingRaw).SetTypes(RedisString)
 		} else { // 字符串长度小于 32 字节，使用 embstr ，申请释放内存只需一次 且保存在一块连续内存，更好利用缓存
 			obj.Sdshdr = NewSdsHdr()
 			obj.Sdshdr.Set(str)
 
-			obj.SetEncoding(REDIS_ENCODING_EMBSTR).SetTypes(REDIS_STRING)
+			obj.SetEncoding(RedisEncodingEmbstr).SetTypes(RedisString)
 		}
 	case int:
 		obj.int = ptr.(int)
-		obj.SetEncoding(REDIS_ENCODING_INT).SetTypes(REDIS_STRING)
+		obj.SetEncoding(RedisEncodingInt).SetTypes(RedisString)
 	case int64:
 		obj.int64 = ptr.(int64)
 	default:
@@ -90,7 +90,7 @@ func (obj *RedisObject) Set(ptr interface{}) *RedisObject {
 // 可以设置 int string   todo: 刚开始是　ziplist 后期改成 dict
 func (obj *RedisObject) Hset(filed interface{}, value interface{}) {
 
-	obj.SetTypes(REDIS_HASH).SetEncoding(REDIS_ENCODING_HT)
+	obj.SetTypes(RedisHash).SetEncoding(RedisEncodingHt)
 
 	filedObj := NewRedisObject()
 	filedObj.Set(filed)
@@ -108,7 +108,7 @@ func (obj *RedisObject) Hset(filed interface{}, value interface{}) {
 
 func (obj *RedisObject) HGet(filed interface{}) (*RedisObject, error) {
 
-	if obj.types != REDIS_HASH {
+	if obj.types != RedisHash {
 		return nil, errors.New("type not redis_hash")
 	}
 
@@ -119,7 +119,7 @@ func (obj *RedisObject) HGet(filed interface{}) (*RedisObject, error) {
 }
 
 func (obj *RedisObject) RPush(strings []string) {
-	obj.SetTypes(REDIS_LIST).SetEncoding(REDIS_ENCODING_LINKEDLIST)
+	obj.SetTypes(RedisList).SetEncoding(RedisEncodingLinkedlist)
 	obj.List = NewList()
 
 	for _, v := range strings {
@@ -138,9 +138,9 @@ func (obj *RedisObject) RPop() *RedisObject {
 func (obj *RedisObject) Get() interface{} {
 
 	switch obj.types {
-	case REDIS_STRING:
+	case RedisString:
 		switch obj.encoding {
-		case REDIS_ENCODING_INT:
+		case RedisEncodingInt:
 			return obj.int
 		default:
 			return obj.Sdshdr.Get()
@@ -152,14 +152,14 @@ func (obj *RedisObject) Get() interface{} {
 }
 
 func (obj *RedisObject) Append(str *string) int {
-	if obj.types != REDIS_STRING {
+	if obj.types != RedisString {
 		return -2 // todo 处理错误码，返回信息
 	}
 
 	// 如果之前是 int ，需要先转成 string
-	if obj.encoding == REDIS_ENCODING_INT {
+	if obj.encoding == RedisEncodingInt {
 		*str = strconv.Itoa(obj.int) + *str
-		obj.SetEncoding(REDIS_ENCODING_EMBSTR)
+		obj.SetEncoding(RedisEncodingEmbstr)
 	}
 
 	obj.Set(str)
