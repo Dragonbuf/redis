@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-const NIL_STRING = "<nil>"
+const NilString = "<nil>"
 
 type RedisDb struct {
 	dict   *adt.Dict // 数据库空间，保存所有键值对
@@ -28,7 +28,7 @@ func (r *RedisDb) Set(key, value string) {
 func (r *RedisDb) Get(key string) string {
 	tarObj := r.dict.Hget(adt.NewRedisObject().Set(&key))
 	if tarObj == nil {
-		return NIL_STRING
+		return NilString
 	}
 	return *tarObj.Sdshdr.Get()
 }
@@ -71,13 +71,13 @@ func (r *RedisDb) HGet(key, filed string) string {
 		targetObj := existsRedisObj.Hget(f)
 
 		if targetObj == nil {
-			return NIL_STRING
+			return NilString
 		}
 
 		return *targetObj.Sdshdr.Get()
 	}
 
-	return NIL_STRING
+	return NilString
 }
 
 func (r *RedisDb) Del(key string) int {
