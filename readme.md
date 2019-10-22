@@ -7,9 +7,9 @@
 
 # redis 基本数据结构实现
 - [ ] sdshdr(简动态字符串)
+- [ ] zskiplist (跳跃表)
 - [ ] list (链表)
 - [ ] dict (字典)
-- [ ] zskiplist (跳跃表)
 - [ ] set(整数集合)
 - [ ]  ziplist(压缩列表)
 - [ ]  obj 对象
@@ -18,6 +18,10 @@
 
 # redis 数据结构基本 API
  - [ ] sdshdr
+    - [x] SdsNewLen
+    - [ ] SdsFree
+    - [x] SdsReqType 
+    - [x] SdsHdrSize
    
 
 # 其他基本数据结构
