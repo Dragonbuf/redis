@@ -1,6 +1,8 @@
 package adt
 
-import "unsafe"
+import (
+	"unsafe"
+)
 
 const (
 	SdsType5 = iota
@@ -25,7 +27,7 @@ type Sdshdr8 struct {
 	buf   []byte
 }
 
-func SdsNewLen(s string) *[]byte {
+func SdsNewLen(s []byte) unsafe.Pointer {
 
 	strLen := len(s)
 	types := SdsReqType(strLen)
@@ -35,18 +37,47 @@ func SdsNewLen(s string) *[]byte {
 
 	// 1 2 4 8 字节，　小于　1 字节暂不计算
 	// 计算不同头部所需的空间
-	hdrlen := SdsHdrSize(types)
-	// todo 可以使用　unsafePoint
-	//sh := hdrlen + strLen + 1
+	//hdrlen := SdsHdrSize(types)
 
-	sds := Sdshdr32{
-		flag:  0,
-		len:   uint32(hdrlen + 1),
-		alloc: 0,
-		buf:   make([]byte, hdrlen+1), // 解决 c '\0'
+	switch types {
+	case SdsType5:
+	case SdsType8:
+		sds := Sdshdr8{
+			len:   uint8(strLen),
+			alloc: uint8(strLen),
+			flag:  uint8(1),
+			buf:   s,
+		}
+		sdsPointer := unsafe.Pointer(&sds)
+		return unsafe.Pointer(uintptr(sdsPointer) + unsafe.Offsetof(sds.buf))
+	case SdsType16:
+		sds := Sdshdr16{
+			len:   uint16(strLen),
+			alloc: uint16(strLen),
+			flag:  uint8(2),
+			buf:   s,
+		}
+		sdsPointer := unsafe.Pointer(&sds)
+		return unsafe.Pointer(uintptr(sdsPointer) + unsafe.Offsetof(sds.buf))
+	case SdsType32:
+		sds := Sdshdr32{
+			len:   uint32(strLen),
+			alloc: uint32(strLen),
+			flag:  uint8(3),
+			buf:   s,
+		}
+		sdsPointer := unsafe.Pointer(&sds)
+		return unsafe.Pointer(uintptr(sdsPointer) + unsafe.Offsetof(sds.buf))
 	}
 
-	return &sds.buf
+	sds := Sdshdr64{
+		len:   uint64(strLen),
+		alloc: uint64(strLen),
+		flag:  uint8(4),
+		buf:   s,
+	}
+	sdsPointer := unsafe.Pointer(&sds)
+	return unsafe.Pointer(uintptr(sdsPointer) + unsafe.Offsetof(sds.buf))
 }
 
 func SdsFree() {
@@ -94,22 +125,42 @@ func SdsReqType(stringSize int) int {
 	return SdsType64
 }
 
+func PointOffset(types int) int {
+	switch types {
+	case SdsType5:
+		return 8
+	case SdsType8:
+		return 6
+	case SdsType16:
+		return 4
+	case SdsType32:
+		return 8
+	case SdsType64:
+		return 8
+	}
+	return 0
+}
+
+func GetFlagsPointByBufPoint(buf unsafe.Pointer) unsafe.Pointer {
+	return unsafe.Pointer(uintptr(buf) - uintptr(PointOffset(SdsReqType(len(*(*[]byte)(buf))))))
+}
+
 type Sdshdr16 struct {
-	flag  uint8  //低 3 位存类型，高 5 位预留
 	len   uint16 // 已使用长度
 	alloc uint16 //总长度
+	flag  uint8  //低 3 位存类型，高 5 位预留
 	buf   []byte
 }
 type Sdshdr32 struct {
-	flag  uint8  //低 3 位存类型，高 5 位预留
 	len   uint32 // 已使用长度
 	alloc uint32 //总长度
+	flag  uint8  //低 3 位存类型，高 5 位预留
 	buf   []byte
 }
 type Sdshdr64 struct {
-	flag  uint8  //低 3 位存类型，高 5 位预留
 	len   uint64 // 已使用长度
 	alloc uint64 //总长度
+	flag  uint8  //低 3 位存类型，高 5 位预留
 	buf   []byte
 }
 
