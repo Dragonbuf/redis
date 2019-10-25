@@ -128,21 +128,10 @@ func SdsReqType(stringSize int) int {
 
 //　根据　buf 长度计算　flag 太复杂，这里不在计算
 func PointOffset(types int) int {
-	switch types {
-	case SdsType5:
-		return 8
-	case SdsType8:
-		return 6
-	case SdsType16:
-		return 4
-	case SdsType32:
-		return 8
-	case SdsType64:
-		return 8
-	}
 	return 0
 }
 
+// 因为确定的 sdstype32 所以 -8 找到 flags
 func GetFlagsPointByBufPoint(buf unsafe.Pointer) unsafe.Pointer {
 	return unsafe.Pointer(uintptr(buf) - uintptr(8))
 }
@@ -171,21 +160,4 @@ type Sdshdr struct {
 	len  int
 	free int
 	buf  *[]byte //这里因为要展示 sds 的细节，所以还是使用 []byte 不是 *string , 但是 Get 返回会统一 *string 方便处理
-}
-
-func NewSdsHdr() *Sdshdr {
-	return &Sdshdr{}
-}
-
-func (sds *Sdshdr) Get() *string {
-	if sds.IsEmpty() {
-		return nil
-	}
-
-	str := string(*sds.buf)
-	return &str
-}
-
-func (sds *Sdshdr) IsEmpty() bool {
-	return sds.len == 0
 }

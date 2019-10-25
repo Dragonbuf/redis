@@ -50,12 +50,14 @@ func TestDict(t *testing.T) {
 	dict.Hset(ks3, vs3)
 
 	redisObject = dict.Hget(ks)
-	if *redisObject.Sdshdr.Get() != v {
+
+	if string(*(*[]byte)(redisObject.Ele)) != v {
 		t.Error("hget k is wrong ", redisObject)
 	}
 
 	redisObject = dict.Hget(ks2)
-	if *redisObject.Sdshdr.Get() != v2 {
+
+	if string(*(*[]byte)(redisObject.Ele)) != v2 {
 		t.Error("hget k2 is wrong ", redisObject)
 	}
 

@@ -15,10 +15,10 @@ func TestList(t *testing.T) {
 	list.LPush(objA)
 	list.LPush(objB)
 
-	if *list.LPop().Sdshdr.Get() != b {
+	if string(*(*[]byte)(list.LPop().Ele)) != b {
 		t.Error("list lpop not equals 2")
 	}
-	if *list.LPop().Sdshdr.Get() != a {
+	if string(*(*[]byte)(list.LPop().Ele)) != a {
 		t.Error("list lpop not equals 2")
 	}
 
@@ -31,11 +31,11 @@ func TestList(t *testing.T) {
 	list.LPush(obj3)
 	list.RPush(obj4)
 
-	if *list.RPop().Sdshdr.Get() != hello {
+	if string(*(*[]byte)(list.LPop().Ele)) != hello {
 		t.Error("rpop error")
 	}
 
-	if *list.RPop().Sdshdr.Get() != world {
+	if string(*(*[]byte)(list.LPop().Ele)) != world {
 		t.Error("rpop error")
 	}
 

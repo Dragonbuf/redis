@@ -34,7 +34,7 @@ func TestNewRedisObject(t *testing.T) {
 	str := "you"
 	obj.Set(&str)
 
-	if reflect.TypeOf(obj.Get()).String() != "*string" {
+	if reflect.TypeOf(obj.Get()).String() != "unsafe.Pointer" {
 		t.Error("wrong type", reflect.TypeOf(obj.Get()).String())
 	}
 
@@ -42,12 +42,8 @@ func TestNewRedisObject(t *testing.T) {
 		t.Error("wrong types")
 	}
 
-	if obj.encoding != RedisEncodingEmbstr {
-		t.Error("wrong encoding")
-	}
-
-	if *obj.Sdshdr.Get() != "you" {
-		t.Error("wrong int ", *obj.Sdshdr.Get())
+	if string(*(*[]byte)(obj.Ele)) != "you" {
+		t.Error("wrong int ", string(*(*[]byte)(obj.Ele)))
 	}
 }
 
