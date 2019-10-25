@@ -30,7 +30,7 @@ func (r *RedisDb) Get(key string) string {
 	if tarObj == nil {
 		return NilString
 	}
-	return *tarObj.Sdshdr.Get()
+	return string(*(*[]byte)(tarObj.Ele))
 }
 
 func (r *RedisDb) HSet(key, filed, value string) (err error) {
@@ -74,7 +74,7 @@ func (r *RedisDb) HGet(key, filed string) string {
 			return NilString
 		}
 
-		return *targetObj.Sdshdr.Get()
+		return string(*(*[]byte)(targetObj.Ele))
 	}
 
 	return NilString
@@ -112,7 +112,7 @@ func (r *RedisDb) RPop(key string) string {
 	if tarObj == nil || tarObj.List.IsEmpty() {
 		return "<nil>"
 	}
-	return *tarObj.List.RPop().Sdshdr.Get()
+	return string(*(*[]byte)(tarObj.List.RPop().Ele))
 }
 func (r *RedisDb) Expire(key, value string) int {
 

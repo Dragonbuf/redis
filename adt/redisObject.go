@@ -2,7 +2,7 @@ package adt
 
 import (
 	"errors"
-	"strconv"
+	"unsafe"
 )
 
 // type
@@ -25,6 +25,7 @@ const (
 )
 
 type RedisObject struct {
+	Ele      unsafe.Pointer
 	types    string
 	encoding string
 	*Object  //这里指向了 object 指针
@@ -63,18 +64,8 @@ func (obj *RedisObject) Set(ptr interface{}) *RedisObject {
 	switch ptr.(type) {
 	case *string:
 		str := ptr.(*string)
-		i := len(*str)
-		if i > 32 {
-			obj.Sdshdr = NewSdsHdr()
-			obj.Sdshdr.Set(str)
-
-			obj.SetEncoding(RedisEncodingRaw).SetTypes(RedisString)
-		} else { // 字符串长度小于 32 字节，使用 embstr ，申请释放内存只需一次 且保存在一块连续内存，更好利用缓存
-			obj.Sdshdr = NewSdsHdr()
-			obj.Sdshdr.Set(str)
-
-			obj.SetEncoding(RedisEncodingEmbstr).SetTypes(RedisString)
-		}
+		obj.Ele = SdsNewLen([]byte(*str))
+		obj.SetEncoding(RedisEncodingRaw).SetTypes(RedisString)
 	case int:
 		obj.int = ptr.(int)
 		obj.SetEncoding(RedisEncodingInt).SetTypes(RedisString)
@@ -143,7 +134,7 @@ func (obj *RedisObject) Get() interface{} {
 		case RedisEncodingInt:
 			return obj.int
 		default:
-			return obj.Sdshdr.Get()
+			return obj.Ele
 		}
 	default:
 		return nil
@@ -151,25 +142,8 @@ func (obj *RedisObject) Get() interface{} {
 
 }
 
-func (obj *RedisObject) Append(str *string) int {
-	if obj.types != RedisString {
-		return -2 // todo 处理错误码，返回信息
-	}
-
-	// 如果之前是 int ，需要先转成 string
-	if obj.encoding == RedisEncodingInt {
-		*str = strconv.Itoa(obj.int) + *str
-		obj.SetEncoding(RedisEncodingEmbstr)
-	}
-
-	obj.Set(str)
-	return obj.GetLen()
-}
 func (obj *RedisObject) GetType() string {
 	return obj.types
-}
-func (obj *RedisObject) GetEncoding() string {
-	return obj.encoding
 }
 
 func (obj *RedisObject) GetExpireSecond() int64 {

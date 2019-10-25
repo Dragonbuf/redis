@@ -1,15 +1,8 @@
 package adt
 
 import (
-	"fmt"
-	"strconv"
 	"testing"
 )
-
-type Num struct {
-	i string
-	j int
-}
 
 func TestSds(t *testing.T) {
 
@@ -17,13 +10,14 @@ func TestSds(t *testing.T) {
 	flagsPoint := GetFlagsPointByBufPoint(newSds8Buf)
 	flagsValue := (*uint8)(flagsPoint)
 
-	fmt.Println(*flagsValue)
+	if *flagsValue != 3 {
+		t.Error("flags value wrong")
+	}
 }
 
 func BenchmarkSdshdr_Set(b *testing.B) {
-	sds := NewSdsHdr()
+	buf := []byte("hello world2, do you know youhello world2, do you know you ")
 	for i := 0; i < b.N; i++ {
-		str := strconv.Itoa(i)
-		sds.Set(&str)
+		SdsNewLen(buf)
 	}
 }

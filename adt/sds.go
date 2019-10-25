@@ -27,12 +27,13 @@ type Sdshdr8 struct {
 	buf   []byte
 }
 
+// 本来需要根据　buf 长度来返回不同的类型，但是现在　go 不支持　１字节对齐，所以只返回一种
 func SdsNewLen(s []byte) unsafe.Pointer {
 
 	strLen := len(s)
 	types := SdsReqType(strLen)
-	if types == SdsType5 && strLen == 0 {
-		types = SdsType8
+	if types == SdsType5 || strLen < 1<<32 {
+		types = SdsType32
 	}
 
 	// 1 2 4 8 字节，　小于　1 字节暂不计算
@@ -125,6 +126,7 @@ func SdsReqType(stringSize int) int {
 	return SdsType64
 }
 
+//　根据　buf 长度计算　flag 太复杂，这里不在计算
 func PointOffset(types int) int {
 	switch types {
 	case SdsType5:
@@ -142,7 +144,7 @@ func PointOffset(types int) int {
 }
 
 func GetFlagsPointByBufPoint(buf unsafe.Pointer) unsafe.Pointer {
-	return unsafe.Pointer(uintptr(buf) - uintptr(PointOffset(SdsReqType(len(*(*[]byte)(buf))))))
+	return unsafe.Pointer(uintptr(buf) - uintptr(8))
 }
 
 type Sdshdr16 struct {
@@ -175,45 +177,6 @@ func NewSdsHdr() *Sdshdr {
 	return &Sdshdr{}
 }
 
-func (sds *Sdshdr) SetLen(len int) *Sdshdr {
-	sds.len = len
-	return sds
-}
-
-func (sds *Sdshdr) SetFree(free int) *Sdshdr {
-	sds.free = free
-	return sds
-}
-func (sds *Sdshdr) SetBuf(buf *[]byte) *Sdshdr {
-	sds.buf = buf
-	return sds
-}
-
-func (sds *Sdshdr) Set(s *string) int {
-	i := len(*s)
-
-	// 如果 sds 本身的 i 长度足够,直接更改
-	if sds.HasEnoughLen(i) {
-		buf := []byte(*s)
-		sds.SetLen(i).SetBuf(&buf)
-		return 1
-	}
-
-	// 如果空间不够了 ,申请所需空间 2 倍的空间,分别赋值给　free 和 i
-	if !sds.HasEnoughLenWithFree(i) {
-		buf := []byte(*s)
-		sds.SetFree(i).SetLen(i).SetBuf(&buf)
-
-		return 1
-	} else {
-		// 如果 i + free 足够使用，那么就直接使用 buf 存储
-		buf := []byte(*s)
-		sds.SetBuf(&buf).SetFree(i - sds.len).SetLen(i)
-
-		return 1
-	}
-}
-
 func (sds *Sdshdr) Get() *string {
 	if sds.IsEmpty() {
 		return nil
@@ -223,18 +186,6 @@ func (sds *Sdshdr) Get() *string {
 	return &str
 }
 
-func (sds *Sdshdr) GetLen() int {
-	return sds.len
-}
-
 func (sds *Sdshdr) IsEmpty() bool {
 	return sds.len == 0
-}
-
-func (sds *Sdshdr) HasEnoughLen(l int) bool {
-	return sds.len >= l
-}
-
-func (sds *Sdshdr) HasEnoughLenWithFree(l int) bool {
-	return sds.len+sds.free > l
 }

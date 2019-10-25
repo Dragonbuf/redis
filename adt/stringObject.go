@@ -1,8 +1,11 @@
 package adt
 
+import "unsafe"
+
 type StringObject struct {
 	int
 	*Sdshdr
+	ele unsafe.Pointer
 }
 
 func NewStringObject() *StringObject {
@@ -19,8 +22,7 @@ func (obj *StringObject) GetInt() int {
 }
 
 func (obj *StringObject) SetString(str *string) *StringObject {
-	obj.Sdshdr = NewSdsHdr()
-	obj.Sdshdr.Set(str)
+	obj.ele = SdsNewLen([]byte(*str))
 	return obj
 }
 

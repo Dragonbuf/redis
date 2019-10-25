@@ -47,9 +47,10 @@ func (d *DictHt) AddDictValue(key *RedisObject, value *RedisObject) {
 
 func (d *DictHt) GetHash(key *RedisObject) (hashVal uint64) {
 
-	k := key.Sdshdr.Get()
+	bytePoint := (*[]byte)(key.Ele)
+	k := string(*bytePoint)
 
-	for _, v := range *k {
+	for _, v := range k {
 		hashVal = (hashVal << 5) + uint64(v+1)
 	}
 
@@ -69,14 +70,14 @@ func (d *DictHt) IsHashConflict(index uint64) bool {
 }
 
 func (d *DictHt) HasSameKey(index uint64, key *RedisObject) bool {
-	return *d.table[index].key.Sdshdr.Get() == *key.Sdshdr.Get()
+	return string(*(*[]byte)(d.table[index].key.Ele)) == string(*(*[]byte)(key.Ele))
 }
 
 func (d *DictHt) FindSameKey(index uint64, key *RedisObject) *DictEntry {
 	tempFind := d.table[index]
 
 	for tempFind != nil {
-		if *tempFind.key.Sdshdr.Get() == *key.Sdshdr.Get() {
+		if (*[]byte)(tempFind.key.Ele) == (*[]byte)(key.Ele) {
 			return tempFind
 		}
 		tempFind = tempFind.next
@@ -98,7 +99,7 @@ func (d *DictHt) findValue(key *RedisObject) *RedisObject {
 	}
 
 	if !d.IsLinked(index) {
-		if *d.table[index].key.Sdshdr.Get() == *key.Sdshdr.Get() {
+		if string(*(*[]byte)(d.table[index].key.Ele)) == string(*(*[]byte)(key.Ele)) {
 			return d.table[index].v
 		}
 		return nil
@@ -108,7 +109,7 @@ func (d *DictHt) findValue(key *RedisObject) *RedisObject {
 	tempTable := d.table[index]
 
 	for tempTable != nil {
-		if *tempTable.key.Sdshdr.Get() == *key.Sdshdr.Get() {
+		if string(*(*[]byte)(tempTable.key.Ele)) == string(*(*[]byte)(key.Ele)) {
 			return tempTable.v
 		}
 		tempTable = tempTable.next
@@ -127,7 +128,7 @@ func (d *DictHt) delValue(key *RedisObject) int {
 	// next  有数据
 	tempTable := d.table[index]
 	for tempTable != nil {
-		if *tempTable.key.Sdshdr.Get() == *key.Sdshdr.Get() {
+		if string(*(*[]byte)(tempTable.key.Ele)) == string(*(*[]byte)(key.Ele)) {
 			//tempTable.v
 			if tempTable.next != nil {
 				d.table[index] = tempTable.next
@@ -167,5 +168,5 @@ func (d *DictHt) IsEmpty() bool {
 }
 
 func (d *DictHt) CompareKey(a *RedisObject, b *RedisObject) bool {
-	return *a.Sdshdr.Get() == *b.Sdshdr.Get()
+	return string(*(*[]byte)(a.Ele)) == string(*(*[]byte)(b.Ele))
 }
