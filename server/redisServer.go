@@ -1,16 +1,19 @@
 package server
 
-import "redis/adt"
+import (
+	"redis/adt"
+	"unsafe"
+)
 
 type RedisServer struct {
 	dbNumber int
 	redisDb  [16]*RedisDb // 这里写死，只有 16 个数据库
 	saveParams
-	dirty          int64      // 修改计数器
-	timeT          int64      // 上一次执行保存时间
-	aofBuffer      adt.Sdshdr // AOF 缓冲区
-	clients        adt.List   // 保存所有客户端状态
-	statPeakMemory int64      // 已使用内存峰值
+	dirty          int64          // 修改计数器
+	timeT          int64          // 上一次执行保存时间
+	aofBuffer      unsafe.Pointer // AOF 缓冲区
+	clients        adt.List       // 保存所有客户端状态
+	statPeakMemory int64          // 已使用内存峰值
 }
 
 type saveParams struct {

@@ -154,10 +154,3 @@ type Sdshdr64 struct {
 	flag  uint8  //低 3 位存类型，高 5 位预留
 	buf   []byte
 }
-
-// 在 c 里面　buf 的　size 是　len + 1 因为最后是 \0 作为结束符
-type Sdshdr struct {
-	len  int
-	free int
-	buf  *[]byte //这里因为要展示 sds 的细节，所以还是使用 []byte 不是 *string , 但是 Get 返回会统一 *string 方便处理
-}

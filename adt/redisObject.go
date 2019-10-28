@@ -34,7 +34,7 @@ type RedisObject struct {
 
 type Object struct {
 	int
-	*Sdshdr
+	Ele unsafe.Pointer
 	*Dict
 	*List
 	int64 // 存储过期时间

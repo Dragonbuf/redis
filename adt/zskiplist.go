@@ -40,9 +40,6 @@ type ZSkipListLevel struct {
 	span    uint32         //跨度
 }
 
-type Obj struct {
-}
-
 func NewZSkipListNode() *ZSkipListNode {
 	return &ZSkipListNode{
 		Ele:      nil,

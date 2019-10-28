@@ -4,7 +4,6 @@ import "unsafe"
 
 type StringObject struct {
 	int
-	*Sdshdr
 	ele unsafe.Pointer
 }
 
@@ -23,10 +22,5 @@ func (obj *StringObject) GetInt() int {
 
 func (obj *StringObject) SetString(str *string) *StringObject {
 	obj.ele = SdsNewLen([]byte(*str))
-	return obj
-}
-
-func (obj *StringObject) SetSds(sds *Sdshdr) *StringObject {
-	obj.Sdshdr = sds
 	return obj
 }
