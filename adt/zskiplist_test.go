@@ -81,3 +81,9 @@ func BenchmarkZSkipList_Create(b *testing.B) {
 	sk := NewZSip(CreateHead("head"), CreateLevel(666))
 	fmt.Println(sk.Level)
 }
+
+func BenchmarkZslRandomLevel(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		ZslRandomLevel()
+	}
+}

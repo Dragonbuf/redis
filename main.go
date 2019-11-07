@@ -66,138 +66,170 @@ func main() {
 		Filed = ""
 		Value = ""
 		_, _ = Scanln(&Command, &Key, &Filed, &Value)
-		DoCommand(Command, Key, Filed, Value)
+
+		args := []string{Key}
+
+		if Filed != "" {
+			args = append(args, Filed)
+		}
+
+		if Value != "" {
+			args = append(args, Value)
+		}
+
+		DoCommand(Command, args)
 	}
 
 }
 
-func DoCommand(command, key, filed, value string) {
+func DoCommand(command string, args []string) {
 
-	if command == "exit" {
-		Println("good bye")
-		os.Exit(1)
+	if db.ExpireIfNeeded(args[0]) {
+		db.Del(args[0])
+		db.DelExpire(args[0])
 	}
 
-	if len(command) == 0 || len(key) == 0 {
-		Println("command or key can not empty")
-		return
+	clientCmd := map[string]struct {
+		function   func([]string)
+		args       []string
+		argsNumber int
+	}{
+		"set": {
+			func(args []string) {
+				if len(args) != 2 {
+					return
+				}
+
+				key := args[0]
+				filed := args[1]
+
+				if len(key) == 0 || len(filed) == 0 {
+					Println("filed or key can not empty")
+					return
+				}
+				db.Set(key, filed)
+			},
+			args,
+			2,
+		},
+		"get": {
+			func(args []string) {
+				if cap(args) != 1 {
+					Println("key can not empty")
+					return
+				}
+				Println(db.Get(args[0]))
+			},
+			args,
+			1,
+		},
+		"expire": {
+			func(args []string) {
+				if len(args) != 2 {
+					Println("filed or key can not empty")
+					return
+				}
+				db.Expire(args[0], args[1])
+			},
+			args,
+			2,
+		},
+		"hdel": {
+			func(args []string) {
+				Println(db.Hdel(args[0], args[1]))
+			},
+			args,
+			2,
+		},
+		"del": {
+			func(args []string) {
+				Println(db.Del(args[0]))
+			},
+			args,
+			1,
+		},
+		"hset": {
+			func(args []string) {
+				if len(args) != 3 {
+					Println("filed or value can not empty")
+					return
+				}
+				err := db.HSet(args[0], args[1], args[2])
+				if err != nil {
+					Println(err)
+				}
+			},
+			args,
+			3,
+		},
+		"hget": {
+			func(args []string) {
+				if len(args) != 2 {
+					Println("filed or key can not empty")
+					return
+				}
+				Println(db.HGet(args[0], args[1]))
+			},
+			args,
+			2,
+		},
+		"rpush": {
+			func(args []string) {
+				if len(args) != 3 {
+					Println("value or key can not empty")
+					return
+				}
+
+				if len(args[2]) == 0 {
+					db.RPush(args[0], args[1])
+				} else {
+					db.RPush(args[0], args[1], args[2])
+				}
+			},
+			args,
+			3,
+		},
+		"rpop": {
+			func(args []string) {
+				if len(args) != 1 {
+					Println("key can not empty")
+					return
+				}
+
+				Println(db.RPop(args[0]))
+			},
+			args,
+			1,
+		},
+		"select": {
+			func(args []string) {
+				dbNum, _ := strconv.Atoi(args[0])
+				if dbNum > Server.GetDbNum() {
+					Println("dbNum error")
+					return
+				}
+				db = Server.Select(dbNum)
+				CurrentDb = dbNum
+				return
+			},
+			args,
+			1,
+		},
+		"exit": {
+			func(args []string) {
+				Println("good bye")
+				os.Exit(1)
+			},
+			args,
+			1,
+		},
 	}
 
-	if command == "select" {
-		dbNum, _ := strconv.Atoi(key)
-		if dbNum > Server.GetDbNum() {
-			Println("dbNum error")
-			return
-		}
-		db = Server.Select(dbNum)
-		CurrentDb = dbNum
-		return
-	}
-
-	if db.ExpireIfNeeded(key) {
-		db.Del(key)
-		db.DelExpire(key)
-	}
-
-	// todo 改写这里 使用 clientCmd 管理参数及命令
-
-	// todo 多个 list 时，需要 incr 多次
-	Server.IncrDirty()
-
-	switch command {
-	case "set":
-		set(key, filed)
-	case "get":
-		get(key)
-	case "hset":
-		Hset(key, filed, value)
-	case "hget":
-		Hget(key, filed)
-	case "rpush":
-		Rpush(Key, Filed, Value)
-	case "rpop":
-		Rpop(Key)
-	case "del":
-		del(key)
-	case "hdel":
-		hdel(key, filed)
-	case "expire":
-		expire(key, filed)
-	default:
+	if cmd, ok := clientCmd[command]; ok {
+		// todo 多个 list 时，需要 incr 多次
+		Server.IncrDirty()
+		cmd.function(cmd.args)
+	} else {
 		Println("not found or support ths command :" + command)
 	}
-}
-
-func expire(key, filed string) {
-	if len(key) == 0 || len(filed) == 0 {
-		Println("filed or key can not empty")
-		return
-	}
-	db.Expire(key, filed)
-}
-
-func hdel(key, filed string) {
-	Println(db.Hdel(key, filed))
-}
-
-func del(key string) {
-	Println(db.Del(key))
-}
-
-func set(key, filed string) {
-	if len(key) == 0 || len(filed) == 0 {
-		Println("filed or key can not empty")
-		return
-	}
-	db.Set(key, filed)
-}
-
-func get(key string) {
-	if len(key) == 0 {
-		Println("key can not empty")
-		return
-	}
-	Println(db.Get(key))
-}
-
-func Hset(key, filed, value string) {
-	if len(filed) == 0 || len(value) == 0 || len(key) == 0 {
-		Println("filed or value can not empty")
-		return
-	}
-	err := db.HSet(key, filed, value)
-	if err != nil {
-		Println(err)
-	}
-}
-
-func Hget(key, filed string) {
-	if len(key) == 0 || len(filed) == 0 {
-		Println("filed or key can not empty")
-		return
-	}
-	Println(db.HGet(key, filed))
-}
-
-func Rpush(key, filed, value string) {
-
-	if len(key) == 0 || len(filed) == 0 {
-		Println("value or key can not empty")
-		return
-	}
-
-	if len(value) == 0 {
-		db.RPush(key, filed)
-	} else {
-		db.RPush(key, filed, value)
-	}
-}
-
-func Rpop(key string) {
-	if len(key) == 0 {
-		Println("key can not empty")
-		return
-	}
-
-	Println(db.RPop(key))
 }

@@ -52,32 +52,53 @@ func NewZSkipListNode() *ZSkipListNode {
 func NewZSkipList() *ZSkipList {
 
 	header := NewZSkipListNode()
-	header.BackWard = nil
-
-	return &ZSkipList{
+	level := ZslRandomLevel()
+	zsl := &ZSkipList{
 		Header: header,
 		Tail:   nil,
 		Length: 0,
 		Level:  1,
 	}
+
+	for j := 0; j < level; j++ {
+		zsl.Header.Level[j].Forward = nil
+		zsl.Header.Level[j].span = 0
+	}
+
+	header.BackWard = nil
+
+	return zsl
 }
 
+// source 31 level 3
 // create node
-func (z *ZSkipList) Create() {
+func (zsl *ZSkipList) Create() {
 
 }
 
-func (z *ZSkipList) Insert() {
+func (zsl *ZSkipList) Insert() {
 	//查找要插入的位置
 	// 调整跳跃表的高度
 	//插入节点
 	//调账 backward
 }
 
-func (z *ZSkipList) ZRange(start, end int, withScores bool) {
+// 找到插入的位置
+func (zsl *ZSkipList) Find() {
+	for i := zsl.Level - 1; i > 0; i-- {
+		var rank [64]int32
+		if i == zsl.Level-1 {
+			rank[i] = i
+		} else {
+			rank[i] = rank[i+1]
+		}
+	}
+}
+
+func (zsl *ZSkipList) ZRange(start, end int, withScores bool) {
 
 }
 
-func (z *ZSkipList) ZCard(start, end int, withScores bool) {
+func (zsl *ZSkipList) ZCard(start, end int, withScores bool) {
 
 }
