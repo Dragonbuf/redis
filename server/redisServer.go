@@ -5,6 +5,14 @@ import (
 	"unsafe"
 )
 
+var Server *RedisServer
+var Db *RedisDb
+
+func init() {
+	Server = NewRedisServer()
+	Db = Server.Select(0)
+}
+
 type RedisServer struct {
 	dbNumber int
 	redisDb  [16]*RedisDb // 这里写死，只有 16 个数据库
@@ -34,6 +42,7 @@ func NewRedisServer() *RedisServer {
 }
 
 func (c *RedisServer) Select(db int) *RedisDb {
+	Db = c.redisDb[db]
 	return c.redisDb[db]
 }
 
