@@ -1,11 +1,7 @@
 # slog
 
-[![GitHub Release](https://img.shields.io/github/v/release/cdr/slog?color=6b9ded&sort=semver)](https://github.com/cdr/slog/releases)
-[![GoDoc](https://godoc.org/cdr.dev/slog?status.svg)](https://godoc.org/cdr.dev/slog)
-[![Coveralls](https://img.shields.io/coveralls/github/cdr/slog?color=65d6a4)](https://coveralls.io/github/cdr/slog)
-[![CI Status](https://github.com/cdr/slog/workflows/ci/badge.svg)](https://github.com/cdr/slog/actions)
-
-slog is a minimal structured logging library for Go.
+![Cirrus CI - Base Branch Build Status](https://img.shields.io/cirrus/github/Dragonbuf/redis)
+![Cirrus CI - Task and Script Build Status](https://img.shields.io/cirrus/github/Dragonbuf/redis?task=test)
 ## 介绍
 一直再用 redis，平时也不太关注，现在用 go 实现一个简单版本的 redis\
 
