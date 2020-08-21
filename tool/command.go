@@ -1,3 +1,4 @@
+// go-redis 所有支持的命令都在这里
 package tool
 
 import (

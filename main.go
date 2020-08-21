@@ -1,12 +1,11 @@
 package main
 
 import (
-	. "fmt"
+	"fmt"
 	_ "net/http/pprof"
 	"redis/server"
 	"redis/tool"
 	"strconv"
-	"time"
 )
 
 var Command string
@@ -15,50 +14,15 @@ var Filed string
 var Value string
 var CurrentDb int
 
-func testGoroutineWithTimeOut() {
-
-	done := make(chan struct{})
-	errChan := make(chan error)
-
-	pool := tool.NewGoroutinePool(10)
-	for i := 0; i < 10; i++ {
-		pool.Add(1)
-		go func() {
-			pool.Done()
-
-			println("bg save ing")
-			//if err!=nil{
-			//	errChan<-errors.New("error")
-			//}
-		}()
-	}
-
-	// wg.Wait()此时也要go出去,防止在wg.Wait()出堵住
-	go func() {
-		pool.Wait()
-		close(done)
-	}()
-
-	select {
-	// 错误快返回 既可以使用 return nil, err
-	case err := <-errChan:
-		println(err)
-		// 正常结束完成
-	case <-done:
-		// 超时
-	case <-time.After(500 * time.Millisecond):
-	}
-}
-
 func main() {
-	Println("[only support get set hset hget del hdel expire exit]\n ")
+	fmt.Println("[暂时只支持 get set hset hget del hdel expire exit 命令]\n ")
 	for {
-		Printf("go-redis " + strconv.Itoa(CurrentDb) + "->  ")
+		fmt.Printf("go-redis 【" + strconv.Itoa(CurrentDb) + "】->  ")
 		Command = ""
 		Key = ""
 		Filed = ""
 		Value = ""
-		_, _ = Scanln(&Command, &Key, &Filed, &Value)
+		_, _ = fmt.Scanln(&Command, &Key, &Filed, &Value)
 
 		args := []string{Key}
 
@@ -85,10 +49,16 @@ func DoCommand(command string, args []string) {
 	clientCmd := tool.GetSupportCommand(args)
 
 	if cmd, ok := clientCmd[command]; ok {
+
+		if cmd.ArgsNumber != len(args) {
+			fmt.Println("命令需要 ", cmd.ArgsNumber, " 个参数，但是仅提供了 ", len(args))
+			return
+		}
+
 		// todo 多个 list 时，需要 incr 多次
 		server.Server.IncrDirty()
 		cmd.Function(cmd.Args)
 	} else {
-		Println("not found or support ths command :" + command)
+		fmt.Println("not found or support ths command :" + command)
 	}
 }
