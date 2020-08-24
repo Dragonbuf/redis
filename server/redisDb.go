@@ -2,6 +2,7 @@ package server
 
 import (
 	"errors"
+	"fmt"
 	"redis/adt"
 	"strconv"
 	"time"
@@ -21,8 +22,25 @@ func NewRedisDb() *RedisDb {
 	return db
 }
 
-func (r *RedisDb) Set(key, value string) {
-	r.dict.Hset(adt.NewRedisObject().Set(&key), adt.NewRedisObject().Set(&value))
+func (r *RedisDb) Set(key, value string) error {
+
+	k := adt.NewRedisObject().Set(&key)
+
+	// 先找到 redisDb 中实际存值的　hash
+	existsRedisObj := r.dict.Hget(k)
+
+	if existsRedisObj != nil {
+		if existsRedisObj.GetType() != adt.RedisString {
+			errorString := fmt.Sprint("已存在类型为 ", existsRedisObj.GetType(), " 的 (", key, "), 不能设置为 ", adt.RedisString)
+			return errors.New(errorString)
+		}
+
+		existsRedisObj.Hset(adt.NewRedisObject().Set(&key), adt.NewRedisObject().Set(&value))
+	} else {
+		r.dict.Hset(adt.NewRedisObject().Set(&key), adt.NewRedisObject().Set(&value))
+	}
+
+	return nil
 }
 
 func (r *RedisDb) Get(key string) string {
@@ -42,7 +60,8 @@ func (r *RedisDb) HSet(key, filed, value string) (err error) {
 
 	if existsRedisObj != nil {
 		if existsRedisObj.GetType() != adt.RedisHash {
-			return errors.New("can not use another type")
+			errorString := fmt.Sprint("已存在类型为 ", existsRedisObj.GetType(), " 的 (", key, "), 不能设置为 ", adt.RedisHash)
+			return errors.New(errorString)
 		}
 
 		existsRedisObj.Hset(&filed, &value)

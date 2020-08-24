@@ -14,8 +14,9 @@ func init() {
 }
 
 type RedisServer struct {
-	dbNumber int
-	redisDb  [16]*RedisDb // 这里写死，只有 16 个数据库
+	dbNumber  int
+	currentDb int
+	redisDb   [16]*RedisDb // 这里写死，只有 16 个数据库
 	saveParams
 	dirty          int64          // 修改计数器
 	timeT          int64          // 上一次执行保存时间
@@ -43,6 +44,7 @@ func NewRedisServer() *RedisServer {
 
 func (c *RedisServer) Select(db int) *RedisDb {
 	Db = c.redisDb[db]
+	c.currentDb = db
 	return c.redisDb[db]
 }
 
@@ -54,8 +56,12 @@ func (c *RedisServer) Save() {
 	// 立即保存
 }
 
-func (c *RedisServer) GetDbNum() int {
+func (c *RedisServer) GetDbTotal() int {
 	return c.dbNumber
+}
+
+func (c *RedisServer) GetCurrentDbNumber() int {
+	return c.currentDb
 }
 
 func (c *RedisServer) IncrDirty() {

@@ -13,7 +13,7 @@ var CurrentDb int
 func main() {
 	fmt.Println("[暂时只支持 get set hset hget del hdel expire exit 命令]\n ")
 	for {
-		fmt.Printf("go-redis 【" + strconv.Itoa(CurrentDb) + "】->  ")
+		fmt.Printf("go-redis 【" + strconv.Itoa(server.Server.GetCurrentDbNumber()) + "】->  ")
 		args := &tool.GoRedisArgs{}
 		if _, err := fmt.Scanln(&args.Command, &args.Key, &args.Fields, &args.Value); err != nil {
 			// 这里有问题，但是暂时忽略

@@ -25,7 +25,9 @@ func GetSupportCommand(args *GoRedisArgs) map[string]cmd {
 	return map[string]cmd{
 		"set": {
 			func(args *GoRedisArgs) {
-				server.Db.Set(args.Key, args.Fields)
+				if err := server.Db.Set(args.Key, args.Fields); err != nil {
+					fmt.Println(err)
+				}
 			},
 			args,
 			3,
@@ -96,8 +98,8 @@ func GetSupportCommand(args *GoRedisArgs) map[string]cmd {
 			func(args *GoRedisArgs) {
 				// todo 实现全局函数
 				dbNum, _ := strconv.Atoi(args.Key)
-				if dbNum > server.Server.GetDbNum() {
-					fmt.Println("dbNum 不能超过 ", server.Server.GetDbNum())
+				if dbNum >= server.Server.GetDbTotal() {
+					fmt.Println("dbNum 不能超过 ", server.Server.GetDbTotal())
 					return
 				}
 				server.Server.Select(dbNum)
@@ -135,5 +137,5 @@ func (g *GoRedisArgs) Size() int {
 		return 3
 	}
 
-	return 0
+	return 4
 }
