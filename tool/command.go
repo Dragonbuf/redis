@@ -8,140 +8,132 @@ import (
 	"strconv"
 )
 
+type GoRedisArgs struct {
+	Command string
+	Key     string
+	Fields  string
+	Value   string
+}
+
 type cmd struct {
-	Function   func([]string)
-	Args       []string
+	Function   func(*GoRedisArgs)
+	Args       *GoRedisArgs
 	ArgsNumber int
 }
 
-func GetSupportCommand(args []string) map[string]cmd {
+func GetSupportCommand(args *GoRedisArgs) map[string]cmd {
 	return map[string]cmd{
 		"set": {
-			func(args []string) {
-				if len(args) != 2 {
-					return
-				}
-
-				key := args[0]
-				filed := args[1]
-
-				if len(key) == 0 || len(filed) == 0 {
-					return
-				}
-				server.Db.Set(key, filed)
+			func(args *GoRedisArgs) {
+				server.Db.Set(args.Key, args.Fields)
 			},
 			args,
-			2,
+			3,
 		},
 		"get": {
-			func(args []string) {
-				if cap(args) != 1 {
-					return
-				}
-				fmt.Println(server.Db.Get(args[0]))
+			func(args *GoRedisArgs) {
+				fmt.Println(server.Db.Get(args.Key))
 			},
 			args,
-			1,
+			2,
 		},
 		"expire": {
-			func(args []string) {
-				if len(args) != 2 {
-					fmt.Println("filed or key can not empty")
-					return
-				}
-				server.Db.Expire(args[0], args[1])
+			func(args *GoRedisArgs) {
+				server.Db.Expire(args.Key, args.Fields)
 			},
 			args,
-			2,
+			3,
 		},
 		"hdel": {
-			func(args []string) {
-				fmt.Println(server.Db.Hdel(args[0], args[1]))
+			func(args *GoRedisArgs) {
+				fmt.Println(server.Db.Hdel(args.Key, args.Fields))
+			},
+			args,
+			3,
+		},
+		"del": {
+			func(args *GoRedisArgs) {
+				fmt.Println(server.Db.Del(args.Key))
 			},
 			args,
 			2,
 		},
-		"del": {
-			func(args []string) {
-				fmt.Println(server.Db.Del(args[0]))
-			},
-			args,
-			1,
-		},
 		"hset": {
-			func(args []string) {
-				if len(args) != 3 {
-					fmt.Println("filed or value can not empty")
-					return
-				}
-				err := server.Db.HSet(args[0], args[1], args[2])
-				if err != nil {
+			func(args *GoRedisArgs) {
+				if err := server.Db.HSet(args.Key, args.Fields, args.Value); err != nil {
 					fmt.Println(err)
 				}
 			},
 			args,
-			3,
+			4,
 		},
 		"hget": {
-			func(args []string) {
-				if len(args) != 2 {
-					fmt.Println("filed or key can not empty")
-					return
+			func(args *GoRedisArgs) {
+				fmt.Println(server.Db.HGet(args.Key, args.Fields))
+			},
+			args,
+			3,
+		},
+		"rpush": {
+			func(args *GoRedisArgs) {
+				if args.Size() == 0 {
+					server.Db.RPush(args.Key, args.Fields)
+				} else {
+					server.Db.RPush(args.Key, args.Fields, args.Value)
 				}
-				fmt.Println(server.Db.HGet(args[0], args[1]))
+			},
+			args,
+			4,
+		},
+		"rpop": {
+			func(args *GoRedisArgs) {
+				fmt.Println(server.Db.RPop(args.Key))
 			},
 			args,
 			2,
 		},
-		"rpush": {
-			func(args []string) {
-				if len(args) != 3 {
-					fmt.Println("value or key can not empty")
-					return
-				}
-
-				if len(args[2]) == 0 {
-					server.Db.RPush(args[0], args[1])
-				} else {
-					server.Db.RPush(args[0], args[1], args[2])
-				}
-			},
-			args,
-			3,
-		},
-		"rpop": {
-			func(args []string) {
-				if len(args) != 1 {
-					fmt.Println("key can not empty")
-					return
-				}
-
-				fmt.Println(server.Db.RPop(args[0]))
-			},
-			args,
-			1,
-		},
 		"select": {
-			func(args []string) {
+			func(args *GoRedisArgs) {
 				// todo 实现全局函数
-				dbNum, _ := strconv.Atoi(args[0])
+				dbNum, _ := strconv.Atoi(args.Key)
 				if dbNum > server.Server.GetDbNum() {
-					fmt.Println("dbNum error")
+					fmt.Println("dbNum 不能超过 ", server.Server.GetDbNum())
 					return
 				}
 				server.Server.Select(dbNum)
 				return
 			},
 			args,
-			1,
+			2,
 		},
 		"exit": {
-			func(args []string) {
+			func(args *GoRedisArgs) {
 				fmt.Println("good bye")
 				os.Exit(1)
 			},
 			args,
-			1,
+			2,
 		},
 	}
+}
+
+//所有非空的参数
+func (g *GoRedisArgs) Size() int {
+	if g.Command == "" {
+		return 0
+	}
+
+	if g.Key == "" {
+		return 1
+	}
+
+	if g.Fields == "" {
+		return 2
+	}
+
+	if g.Value == "" {
+		return 3
+	}
+
+	return 0
 }

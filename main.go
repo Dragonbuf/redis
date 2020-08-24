@@ -8,50 +8,34 @@ import (
 	"strconv"
 )
 
-var Command string
-var Key string
-var Filed string
-var Value string
 var CurrentDb int
 
 func main() {
 	fmt.Println("[暂时只支持 get set hset hget del hdel expire exit 命令]\n ")
 	for {
 		fmt.Printf("go-redis 【" + strconv.Itoa(CurrentDb) + "】->  ")
-		Command = ""
-		Key = ""
-		Filed = ""
-		Value = ""
-		_, _ = fmt.Scanln(&Command, &Key, &Filed, &Value)
-
-		args := []string{Key}
-
-		if Filed != "" {
-			args = append(args, Filed)
+		args := &tool.GoRedisArgs{}
+		if _, err := fmt.Scanln(&args.Command, &args.Key, &args.Fields, &args.Value); err != nil {
+			// 这里有问题，但是暂时忽略
 		}
-
-		if Value != "" {
-			args = append(args, Value)
-		}
-
-		DoCommand(Command, args)
+		DoCommand(args)
 	}
 
 }
 
-func DoCommand(command string, args []string) {
+func DoCommand(args *tool.GoRedisArgs) {
 
-	if server.Db.ExpireIfNeeded(args[0]) {
-		server.Db.Del(args[0])
-		server.Db.DelExpire(args[0])
+	if server.Db.ExpireIfNeeded(args.Command) {
+		server.Db.Del(args.Command)
+		server.Db.DelExpire(args.Command)
 	}
 
 	clientCmd := tool.GetSupportCommand(args)
 
-	if cmd, ok := clientCmd[command]; ok {
+	if cmd, ok := clientCmd[args.Command]; ok {
 
-		if cmd.ArgsNumber != len(args) {
-			fmt.Println("命令需要 ", cmd.ArgsNumber, " 个参数，但是仅提供了 ", len(args))
+		if cmd.ArgsNumber != args.Size() {
+			fmt.Println("命令需要 ", cmd.ArgsNumber, " 个参数，但是仅提供了 ", args.Size())
 			return
 		}
 
@@ -59,6 +43,6 @@ func DoCommand(command string, args []string) {
 		server.Server.IncrDirty()
 		cmd.Function(cmd.Args)
 	} else {
-		fmt.Println("not found or support ths command :" + command)
+		fmt.Println("未找到此命令 :" + args.Command)
 	}
 }
