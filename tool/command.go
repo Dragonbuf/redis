@@ -112,7 +112,7 @@ func GetSupportCommand(args *GoRedisArgs) map[string]cmd {
 				os.Exit(1)
 			},
 			args,
-			2,
+			1,
 		},
 	}
 }

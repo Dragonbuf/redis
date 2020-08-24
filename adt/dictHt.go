@@ -74,13 +74,14 @@ func (d *DictHt) HasSameKey(index uint64, key *RedisObject) bool {
 }
 
 func (d *DictHt) FindSameKey(index uint64, key *RedisObject) *DictEntry {
-	tempFind := d.table[index]
+	currentDictTable := d.table[index]
 
-	for tempFind != nil {
-		if (*[]byte)(tempFind.key.Ele) == (*[]byte)(key.Ele) {
-			return tempFind
+	for currentDictTable != nil {
+		// 循环 当前 dict table 中是否存在 key
+		if *(*string)(currentDictTable.key.Ele) == *(*string)(key.Ele) {
+			return currentDictTable
 		}
-		tempFind = tempFind.next
+		currentDictTable = currentDictTable.next
 	}
 
 	return nil

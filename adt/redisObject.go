@@ -25,7 +25,7 @@ const (
 )
 
 type RedisObject struct {
-	Ele      unsafe.Pointer
+	Ele      unsafe.Pointer // 这里是指针
 	types    string
 	encoding string
 	*Object  //这里指向了 object 指针
